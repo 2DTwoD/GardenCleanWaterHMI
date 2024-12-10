@@ -1,91 +1,11 @@
 import sys
-from enum import Enum
+from PyQt6.QtWidgets import QApplication, QMainWindow
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPixmap, QTransform, QFont, QPainter, QPen, QColor, QBrush
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QPushButton
+from item import Item
+from mouse_pos import MousePos
+from sensor_mon import SensorMon
+from own_types import ObjectType, Point, RotateDir
 
-geometryStep = 10
-
-
-class RotateDir(Enum):
-    RIGHT = 0
-    DOWN = 1
-    LEFT = 2
-    UP = 3
-
-
-class ObjectType(Enum):
-    PUMP = 0
-    VALVE = 1
-
-class Point(object):
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-class MousePos(QWidget):
-    def __init__(self, parent):
-        super(MousePos, self).__init__()
-        self.setParent(parent)
-        self.xPos = QLabel("0", parent=self)
-        self.xPos.setGeometry(0, 0, geometryStep * 10, geometryStep * 2)
-        self.yPos = QLabel("0", parent=self)
-        self.yPos.setGeometry(0, self.xPos.geometry().height(), geometryStep * 10, geometryStep * 2)
-        self.setMouseTracking(True)
-        self.xPos.setMouseTracking(True)
-        self.yPos.setMouseTracking(True)
-
-    def updatePos(self, x, y):
-        self.xPos.setText(f'X: {x}')
-        self.yPos.setText(f'Y: {y}')
-
-
-class Item(QWidget):
-    def __init__(self, parent, labelText, type: ObjectType, position: Point, rotation: RotateDir):
-        super(Item, self).__init__()
-        self.setParent(parent)
-        self.setFixedSize(8 * geometryStep, 5 * geometryStep)
-        label = QLabel(labelText, parent=self)
-        labX = int(1.5 * geometryStep) if type == ObjectType.VALVE and rotation.value % 2 == 1 else 0
-        label.setGeometry(labX, 0, 3 * geometryStep, 2 * geometryStep)
-        label.setFont(QFont('Times', 16))
-        label.setStyleSheet("background: transparent;")
-        picture = QLabel(parent=self)
-        picPath = 'pics/pump_stopped.png' if type == ObjectType.PUMP else 'pics/valve_closed.png'
-        pixmap = QPixmap(picPath)
-        picture.setStyleSheet("background: transparent;")
-        transform = QTransform()
-        transform.rotate(90 * rotation.value)
-        pixmap = pixmap.transformed(transform)
-        picture.setPixmap(pixmap)
-        picture.setGeometry(3 * geometryStep, 0, 50, 50)
-        self.setMouseTracking(True)
-        self.move(position.x - int(5.5 * geometryStep), position.y - int(2.5 * geometryStep))
-
-
-class SensorMon(QWidget):
-    def __init__(self, parent, labelText, position: Point):
-        super(SensorMon, self).__init__()
-        label = QLabel(labelText, parent=self)
-        label.setFont(QFont('Times', 16))
-        label.setStyleSheet("background: transparent; color: white")
-        self.setParent(parent)
-        self.move(position.x, position.y)
-        self.wid = 0
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        pen = QPen()
-        pen.setWidth(2)
-        pen.setColor(QColor('lightgray'))
-        brush = QBrush()
-        brush.setColor(QColor("lightgray"))
-        brush.setStyle(Qt.BrushStyle.SolidPattern)
-        painter.setPen(pen)
-        painter.setBrush(brush)
-        painter.drawRect(0, 0, int(2.5 * geometryStep), int(2.5 * geometryStep) + self.wid)
-        painter.end()
 
 class MainWindow(QMainWindow):
     def __init__(self):
