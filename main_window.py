@@ -50,7 +50,6 @@ class MainWindow(QMainWindow):
 
     def di_init(self):
         self.M1 = Item("M1", ObjectType.PUMP, QPoint(265, 185), RotateDir.LEFT)
-        #DI.Container.item(text="M1", type=ObjectType.PUMP, position=QPoint(265, 185), rotation=RotateDir.LEFT)
         self.M2 = Item("M2", ObjectType.PUMP, QPoint(495, 187), RotateDir.LEFT)
         self.M3 = Item("M3", ObjectType.PUMP, QPoint(723, 187), RotateDir.LEFT)
         self.M7 = Item("M6", ObjectType.PUMP, QPoint(921, 743), RotateDir.LEFT)
@@ -78,10 +77,7 @@ class MainWindow(QMainWindow):
         self.show()
 
     def mouseMoveEvent(self, event):
-        try:
-            self.mousePos.updatePos(event.pos().x(), event.pos().y())
-        except Exception as msg:
-            print('Error with mouse move: ' + str(msg))
+        self.mousePos.updatePos(event.pos().x(), event.pos().y())
 
     def closeEvent(self, event):
         QApplication.closeAllWindows()
