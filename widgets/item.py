@@ -1,10 +1,10 @@
 from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QWidget, QLabel, QHBoxLayout, QPushButton, QGridLayout
+from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QGridLayout
 
-from items.picObject import PicObject
-from own_types import ObjectType, RotateDir, getGeometryStep
-import di as DI
+from misc import di
+from widgets.picObject import PicObject
+from misc.own_types import ObjectType, RotateDir, getGeometryStep
 
 
 class ControlWindow(QWidget):
@@ -13,7 +13,7 @@ class ControlWindow(QWidget):
         self.buttonTextList = ["Старт " + labelText, "Стоп " + labelText]
         if objectType == ObjectType.VALVE:
             self.buttonTextList = ["Открыть " + labelText, "Закрыть " + labelText]
-        self.mousePos = DI.Container.mousePos()
+        self.mousePos = di.Container.mousePos()
         self.setWindowTitle(labelText)
         self.setGeometry(self.mousePos.getGlobalPos().x(), self.mousePos.getGlobalPos().y(), 200, 100)
         self.picObject = PicObject(objectType=objectType)
@@ -34,7 +34,7 @@ class Item(QWidget):
     def __init__(self, text, objectType: ObjectType, position: QPoint, rotation: RotateDir):
         super(Item, self).__init__()
         self.objectType = objectType
-        self.setParent(DI.Container.mainWindow())
+        self.setParent(di.Container.mainWindow())
         self.setFixedSize(8 * getGeometryStep(), 5 * getGeometryStep())
         self.labelText = text
         self.position = position

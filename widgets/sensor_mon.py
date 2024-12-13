@@ -1,16 +1,16 @@
-from PyQt6.QtCore import Qt, QPoint
-from PyQt6.QtGui import QFont, QPainter, QPen, QColor, QBrush
+from PyQt6.QtCore import QPoint
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import QLabel
 
-from own_types import getGeometryStep
-import di as DI
+from misc import di
+from misc.own_types import getGeometryStep
 
 
 class SensorMon(QLabel):
     def __init__(self, labelText, position: QPoint):
         super(SensorMon, self).__init__(labelText)
         self.colors = ['lightgray', 'lightgreen']
-        self.setParent(DI.Container.mainWindow())
+        self.setParent(di.Container.mainWindow())
         self.setGeometry(0, 0, int(2.5 * getGeometryStep()), int(2.5 * getGeometryStep()))
         self.setFont(QFont('Times', 16))
         self.move(position.x(), position.y())

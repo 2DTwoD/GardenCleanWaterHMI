@@ -1,11 +1,11 @@
 from PyQt6.QtCore import QPoint
-from PyQt6.QtGui import QCursor
 from PyQt6.QtWidgets import QMainWindow, QApplication
 
-import di as DI
-from item import Item
-from sensor_mon import SensorMon
-from own_types import ObjectType, RotateDir
+from widgets.control_panel import ControlPanel
+from widgets.item import Item
+from misc import di
+from widgets.sensor_mon import SensorMon
+from misc.own_types import ObjectType, RotateDir
 
 
 class MainWindow(QMainWindow):
@@ -39,6 +39,7 @@ class MainWindow(QMainWindow):
         self.setFixedSize(1200, 800)
         self.setStyleSheet("background: white; background-image: url(pics/back.png)")
         self.mousePos = None
+        self.controlPanel = None
         self.setMouseTracking(True)
         # self.but = QPushButton("херачь!", parent=self)
         # self.but.released.connect(lambda: self.the_button_was_clicked(self.sens))
@@ -48,7 +49,7 @@ class MainWindow(QMainWindow):
     #     sens.wid += 1
     #     sens.update()
 
-    def di_init(self):
+    def init(self):
         self.M1 = Item("M1", ObjectType.PUMP, QPoint(265, 185), RotateDir.LEFT)
         self.M2 = Item("M2", ObjectType.PUMP, QPoint(495, 187), RotateDir.LEFT)
         self.M3 = Item("M3", ObjectType.PUMP, QPoint(723, 187), RotateDir.LEFT)
@@ -73,7 +74,8 @@ class MainWindow(QMainWindow):
         self.S4 = SensorMon("S4", QPoint(930, 585))
         self.S5 = SensorMon("S5", QPoint(930, 620))
         self.S6 = SensorMon("S6", QPoint(930, 655))
-        self.mousePos = DI.Container.mousePos()
+        self.mousePos = di.Container.mousePos()
+        self.controlPanel = ControlPanel()
         self.show()
 
     def mouseMoveEvent(self, event):

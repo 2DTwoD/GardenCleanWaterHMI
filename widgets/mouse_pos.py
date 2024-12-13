@@ -1,8 +1,8 @@
 from PyQt6.QtCore import QPoint
 from PyQt6.QtWidgets import QWidget, QLabel
 
-import di as DI
-from own_types import getGeometryStep
+from misc import di
+from misc.own_types import getGeometryStep
 
 
 class MousePos(QWidget):
@@ -11,7 +11,7 @@ class MousePos(QWidget):
         self.pos = QPoint(0, 0)
         self.globPos = QPoint(0, 0)
         self.setGeometry(0, 0, 100, 40)
-        self.setParent(DI.Container.mainWindow())
+        self.setParent(di.Container.mainWindow())
         self.xPosLabel = QLabel("0", parent=self)
         self.xPosLabel.setGeometry(0, 0, getGeometryStep() * 10, getGeometryStep() * 2)
         self.yPosLabel = QLabel("0", parent=self)

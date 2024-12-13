@@ -1,7 +1,7 @@
 from PyQt6.QtGui import QPixmap, QTransform
-from PyQt6.QtWidgets import QWidget, QLabel
+from PyQt6.QtWidgets import QLabel
 
-from own_types import ObjectType, RotateDir
+from misc.own_types import ObjectType, RotateDir
 
 
 class PicObject(QLabel):

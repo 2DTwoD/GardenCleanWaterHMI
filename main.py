@@ -1,9 +1,9 @@
 import sys
 from PyQt6.QtWidgets import QApplication
 
-import di as DI
+from misc import di
 
 app = QApplication(sys.argv)
-window = DI.Container.mainWindow()
-window.di_init()
+window = di.Container.mainWindow()
+window.init()
 app.exec()

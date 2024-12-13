@@ -1,10 +1,10 @@
 from PyQt6.QtCore import QPoint
 from dependency_injector import containers, providers
 
-from item import Item
-from main_window import MainWindow
-from mouse_pos import MousePos
-from own_types import RotateDir, ObjectType
+from widgets.item import Item
+from widgets.main_window import MainWindow
+from widgets.mouse_pos import MousePos
+from misc.own_types import RotateDir, ObjectType
 
 
 class Container(containers.DeclarativeContainer):
