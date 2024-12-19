@@ -1,9 +1,9 @@
 from PyQt6.QtCore import Qt, QPoint
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QGridLayout
+from PyQt6.QtWidgets import QWidget, QGridLayout
 
 from misc import di
-from widgets.picObject import PicObject
+from widgets.brics import SButton, SLabel
+from widgets.pic_object import PicObject
 from misc.own_types import ObjectType, RotateDir, getGeometryStep
 
 
@@ -17,8 +17,8 @@ class ControlWindow(QWidget):
         self.setWindowTitle(labelText)
         self.setGeometry(self.mousePos.getGlobalPos().x(), self.mousePos.getGlobalPos().y(), 200, 100)
         self.picObject = PicObject(objectType=objectType)
-        self.on = QPushButton(self.buttonTextList[0])
-        self.off = QPushButton(self.buttonTextList[1])
+        self.on = SButton(self.buttonTextList[0])
+        self.off = SButton(self.buttonTextList[1])
         self.grid = QGridLayout()
         self.grid.addWidget(self.picObject, 0, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
         self.grid.addWidget(self.on, 1, 0)
@@ -38,11 +38,9 @@ class Item(QWidget):
         self.setFixedSize(8 * getGeometryStep(), 5 * getGeometryStep())
         self.labelText = text
         self.position = position
-        self.label = QLabel(text, parent=self)
+        self.label = SLabel(text, parent=self, size=16, transparent=True)
         labX = int(1.5 * getGeometryStep()) if objectType == ObjectType.VALVE and rotation.value % 2 == 1 else 0
         self.label.setGeometry(labX, 0, 3 * getGeometryStep(), 2 * getGeometryStep())
-        self.label.setFont(QFont('Times', 16))
-        self.label.setStyleSheet("background: transparent;")
         self.picObject = PicObject(parent=self, objectType=objectType, rotation=rotation)
         self.picObject.setGeometry(3 * getGeometryStep(), 0,
                                    self.picObject.geometry().width(), self.picObject.geometry().height())

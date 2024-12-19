@@ -3,17 +3,20 @@ from PyQt6.QtWidgets import QWidget, QPushButton, QGridLayout, QLabel, QComboBox
 
 from misc import di
 from misc.own_types import TankNumber
-from widgets.s_label import SLabel
+from widgets.brics import SLabel, SButton, SCombo
+from widgets.seq_window import SeqWindow
 
 
 class TankStroke(QWidget):
     def __init__(self, tankNumber: TankNumber):
         super(TankStroke, self).__init__()
+        self.seqWindow = None
+        self.tankNumber = tankNumber
         self.labelTextList = ["Бак чистой воды", "Бак отстойник 1", "Бак отстойник 2", "Бак отстойник 3"]
         self.setGeometry(0, 0, 300, 30)
         self.label = SLabel(self.labelTextList[tankNumber.value] + ", текущий шаг: ", transparent=True, color="gray")
         self.stepLabel = SLabel("Х", transparent=True)
-        self.seqButton = QPushButton("Последовательность")
+        self.seqButton = SButton("Последовательность")
         self.box = QHBoxLayout()
         self.box.addWidget(self.label)
         self.box.addWidget(self.stepLabel)
@@ -24,6 +27,12 @@ class TankStroke(QWidget):
         self.box.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.box.setContentsMargins(0, 0, 0, 0)
         self.box.setSpacing(0)
+        self.seqButton.clicked.connect(self.clickOnButton)
+        self.setMouseTracking(True)
+
+    def clickOnButton(self):
+        self.seqWindow = SeqWindow(self.labelTextList[self.tankNumber.value], self.tankNumber)
+        self.seqWindow.show()
 
 
 class ComStroke(QWidget):
@@ -33,9 +42,9 @@ class ComStroke(QWidget):
         self.statusColorList = ["red", "green"]
         self.setGeometry(0, 0, 300, 30)
         self.connectLabel = SLabel("Выбор COM-порта:", color="gray", transparent=True)
-        self.connectCombo = QComboBox()
+        self.connectCombo = SCombo()
         self.connectCombo.addItems(["COM1", "COM2"])
-        self.connectButton = QPushButton("Подключиться к МК")
+        self.connectButton = SButton("Подключиться к МК")
         self.statusLabel = SLabel(self.statusList[0], color="white", background="red")
         self.statusLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.box = QHBoxLayout()
@@ -49,6 +58,7 @@ class ComStroke(QWidget):
         self.box.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.box.setContentsMargins(0, 0, 0, 0)
         self.box.setSpacing(0)
+        self.setMouseTracking(True)
 
 
 class ControlPanel(QWidget):
@@ -76,3 +86,4 @@ class ControlPanel(QWidget):
         for i in range(6):
             self.box.setStretch(i, 1)
         self.setLayout(self.box)
+        self.setMouseTracking(True)
