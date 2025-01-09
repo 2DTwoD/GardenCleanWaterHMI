@@ -9,15 +9,19 @@ class SFont(QFont):
 
 
 class SLabel(QLabel):
-    def __init__(self, text, parent=None, size=10, color="black", background="white", transparent=False):
+    def __init__(self, text, parent=None, size=10, color="black", background="white", transparent=False, wordWrap=True,
+                 maxWidth=None):
         super(SLabel, self).__init__(parent=parent)
         self.setText(text)
         if transparent:
             self.setStyleSheet(f"color: {color};background: transparent")
         else:
             self.setStyleSheet(f"color: {color};background:{background}")
+        self.setWordWrap(wordWrap)
         self.setFont(SFont(size))
         self.setMouseTracking(True)
+        if maxWidth is not None:
+            self.setMaximumWidth(maxWidth)
 
 
 class SButton(QPushButton):
