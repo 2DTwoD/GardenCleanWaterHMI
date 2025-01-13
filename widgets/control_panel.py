@@ -1,89 +1,93 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout
 
 from misc import di
-from misc.own_types import TankNumber
+from misc.own_types import TankNumber, Align
 from widgets.brics import SLabel, SButton, SCombo
 from widgets.seq_window import SeqWindow
 
 
-class TankStroke(QWidget):
+class TankLabelList(list):
+    def __init__(self):
+        super(list, self).__init__()
+        self.extend(["Бак чистой воды", "Бак отстойник 1", "Бак отстойник 2", "Бак отстойник 3"])
+
+
+class TankStroke(list):
     def __init__(self, tankNumber: TankNumber):
-        super(TankStroke, self).__init__()
+        super(list, self).__init__()
         self.seqWindow = None
         self.tankNumber = tankNumber
-        self.labelTextList = ["Бак чистой воды", "Бак отстойник 1", "Бак отстойник 2", "Бак отстойник 3"]
-        self.setGeometry(0, 0, 300, 30)
-        self.label = SLabel(self.labelTextList[tankNumber.value] + ", текущий шаг: ", transparent=True, color="gray")
-        self.stepLabel = SLabel("Х", transparent=True)
+        self.tankLabelList = di.TankLabelList()
+
+        self.label = SLabel(self.tankLabelList[tankNumber.value], transparent=True, color="gray", align=Align.VCENTER)
+        self.stepLabel = SLabel("Шаг Х", transparent=True, align=Align.VCENTER)
         self.seqButton = SButton("Последовательность")
-        self.box = QHBoxLayout()
-        self.box.addWidget(self.label)
-        self.box.addWidget(self.stepLabel)
-        self.box.addWidget(self.seqButton)
-        self.setLayout(self.box)
-        for i in range(3):
-            self.box.setStretch(i, 1)
-        self.box.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.box.setContentsMargins(0, 0, 0, 0)
-        self.box.setSpacing(0)
+        self.autoButton = SButton("Автомат")
+        self.manButton = SButton("Ручной")
+
+        self.append(self.label)
+        self.append(self.stepLabel)
+        self.append(self.seqButton)
+        self.append(self.autoButton)
+        self.append(self.manButton)
+
         self.seqButton.clicked.connect(self.clickOnButton)
-        self.setMouseTracking(True)
 
     def clickOnButton(self):
-        self.seqWindow = SeqWindow(self.labelTextList[self.tankNumber.value], self.tankNumber)
+        self.seqWindow = SeqWindow(self.tankLabelList[self.tankNumber.value], self.tankNumber)
         self.seqWindow.show()
 
 
-class ComStroke(QWidget):
+class ComStroke(list):
     def __init__(self):
-        super(ComStroke, self).__init__()
+        super(list, self).__init__()
         self.statusList = ["X", "V"]
         self.statusColorList = ["red", "green"]
-        self.setGeometry(0, 0, 300, 30)
         self.connectLabel = SLabel("Выбор COM-порта:", color="gray", transparent=True)
         self.connectCombo = SCombo()
         self.connectCombo.addItems(["COM1", "COM2"])
         self.connectButton = SButton("Подключиться к МК")
-        self.statusLabel = SLabel(self.statusList[0], color="white", background="red")
-        self.statusLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.box = QHBoxLayout()
-        self.box.addWidget(self.connectLabel)
-        self.box.addWidget(self.connectCombo)
-        self.box.addWidget(self.connectButton)
-        self.box.addWidget(self.statusLabel)
-        for i in range(4):
-            self.box.setStretch(i, 1)
-        self.setLayout(self.box)
-        self.box.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.box.setContentsMargins(0, 0, 0, 0)
-        self.box.setSpacing(0)
-        self.setMouseTracking(True)
+        self.disconnectButton = SButton("Отключиться от МК")
+        self.statusLabel = SLabel(self.statusList[0], color="white", background="red", align=Align.CENTER)
+
+        self.append(self.connectLabel)
+        self.append(self.connectCombo)
+        self.append(self.connectButton)
+        self.append(self.disconnectButton)
+        self.append(self.statusLabel)
 
 
 class ControlPanel(QWidget):
     def __init__(self):
         super(ControlPanel, self).__init__()
 
+        self.grid = QGridLayout()
+        self.grid.setSpacing(3)
+        self.rowNum = 0
+
         self.setParent(di.Container.mainWindow())
         self.setGeometry(225, 600, 600, 200)
-
         self.chbSeqPanel = TankStroke(TankNumber.CHB)
         self.ob1SeqPanel = TankStroke(TankNumber.OB1)
         self.ob2SeqPanel = TankStroke(TankNumber.OB2)
         self.ob3SeqPanel = TankStroke(TankNumber.OB3)
         self.comStroke = ComStroke()
+        self.tankQueue = SLabel("Очередь опорожнения: X-->X-->X", size=12, transparent=True, align=Align.CENTER)
 
-        self.box = QVBoxLayout()
-        self.box.addWidget(self.chbSeqPanel)
-        self.box.addWidget(self.ob1SeqPanel)
-        self.box.addWidget(self.ob2SeqPanel)
-        self.box.addWidget(self.ob3SeqPanel)
-        self.box.addWidget(self.comStroke)
+        self.addRow(self.chbSeqPanel)
+        self.addRow(self.ob1SeqPanel)
+        self.addRow(self.ob2SeqPanel)
+        self.addRow(self.ob3SeqPanel)
+        self.grid.addWidget(self.tankQueue, self.rowNum, 0, 1, 5)
+        self.rowNum += 1
+        self.addRow(self.comStroke)
+
         self.setStyleSheet("background: lightgray")
-        self.box.setContentsMargins(0, 0, 0, 0)
-        self.box.setSpacing(0)
-        for i in range(6):
-            self.box.setStretch(i, 1)
-        self.setLayout(self.box)
+        self.setLayout(self.grid)
         self.setMouseTracking(True)
+
+    def addRow(self, widgetList):
+        for index, widget in enumerate(widgetList):
+            self.grid.addWidget(widget, self.rowNum, index)
+        self.rowNum += 1

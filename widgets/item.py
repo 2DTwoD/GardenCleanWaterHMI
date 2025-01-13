@@ -13,9 +13,9 @@ class ControlWindow(QWidget):
         self.buttonTextList = ["Старт " + labelText, "Стоп " + labelText]
         if objectType == ObjectType.VALVE:
             self.buttonTextList = ["Открыть " + labelText, "Закрыть " + labelText]
-        self.mousePos = di.Container.mousePos()
+        mousePos = di.Container.mousePos()
         self.setWindowTitle(labelText)
-        self.setGeometry(self.mousePos.getGlobalPos().x(), self.mousePos.getGlobalPos().y(), 200, 100)
+        self.setGeometry(mousePos.getGlobalPos().x(), mousePos.getGlobalPos().y(), 200, 100)
         self.picObject = PicObject(objectType=objectType)
         self.on = SButton(self.buttonTextList[0])
         self.off = SButton(self.buttonTextList[1])
@@ -37,10 +37,9 @@ class Item(QWidget):
         self.setParent(di.Container.mainWindow())
         self.setFixedSize(8 * getGeometryStep(), 5 * getGeometryStep())
         self.labelText = text
-        self.position = position
         self.label = SLabel(text, parent=self, size=16, transparent=True)
         labX = int(1.5 * getGeometryStep()) if objectType == ObjectType.VALVE and rotation.value % 2 == 1 else 0
-        self.label.setGeometry(labX, 0, 3 * getGeometryStep(), 2 * getGeometryStep())
+        self.label.setGeometry(labX, 0, 3 * getGeometryStep(), 3 * getGeometryStep())
         self.picObject = PicObject(parent=self, objectType=objectType, rotation=rotation)
         self.picObject.setGeometry(3 * getGeometryStep(), 0,
                                    self.picObject.geometry().width(), self.picObject.geometry().height())

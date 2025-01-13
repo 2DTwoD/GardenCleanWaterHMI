@@ -1,5 +1,7 @@
 from enum import Enum
 
+from PyQt6.QtCore import Qt
+
 
 class TankNumber(Enum):
     CHB = 0
@@ -18,6 +20,12 @@ class RotateDir(Enum):
     DOWN = 1
     LEFT = 2
     UP = 3
+
+class Align(Enum):
+    RIGHT = Qt.AlignmentFlag.AlignRight
+    LEFT = Qt.AlignmentFlag.AlignLeft
+    CENTER = Qt.AlignmentFlag.AlignCenter
+    VCENTER = Qt.AlignmentFlag.AlignVCenter
 
 
 def getGeometryStep():
