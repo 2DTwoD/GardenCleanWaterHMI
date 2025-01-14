@@ -1,10 +1,10 @@
 from PyQt6.QtCore import QPoint
 from PyQt6.QtWidgets import QMainWindow, QApplication
 
-from widgets.control_panel import ControlPanel
-from widgets.item import Item
+from panels.control_panel import ControlPanel
+from panels.item import Item
 from misc import di
-from widgets.sensor_mon import SensorMon
+from panels.sensor_mon import SensorMon
 from misc.own_types import ObjectType, RotateDir
 
 
@@ -41,13 +41,6 @@ class MainWindow(QMainWindow):
         self.mousePos = None
         self.controlPanel = None
         self.setMouseTracking(True)
-        # self.but = QPushButton("херачь!", parent=self)
-        # self.but.released.connect(lambda: self.the_button_was_clicked(self.sens))
-        # self.but.move(800, 300)
-
-    # def the_button_was_clicked(self, sens):
-    #     sens.wid += 1
-    #     sens.update()
 
     def init(self):
         self.M1 = Item("M1", ObjectType.PUMP, QPoint(265, 185), RotateDir.LEFT)

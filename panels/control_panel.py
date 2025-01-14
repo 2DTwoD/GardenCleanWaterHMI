@@ -1,10 +1,9 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout
+from PyQt6.QtWidgets import QWidget, QGridLayout
 
 from misc import di
 from misc.own_types import TankNumber, Align
 from widgets.brics import SLabel, SButton, SCombo
-from widgets.seq_window import SeqWindow
+from panels.seq_window import SeqWindow
 
 
 class TankLabelList(list):

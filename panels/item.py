@@ -1,3 +1,4 @@
+
 from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtWidgets import QWidget, QGridLayout
 
@@ -16,7 +17,7 @@ class ControlWindow(QWidget):
         mousePos = di.Container.mousePos()
         self.setWindowTitle(labelText)
         self.setGeometry(mousePos.getGlobalPos().x(), mousePos.getGlobalPos().y(), 200, 100)
-        self.picObject = PicObject(objectType=objectType)
+        self.picObject = PicObject(labelText, objectType=objectType)
         self.on = SButton(self.buttonTextList[0])
         self.off = SButton(self.buttonTextList[1])
         self.grid = QGridLayout()
@@ -31,16 +32,16 @@ class ControlWindow(QWidget):
 class Item(QWidget):
     controlWindow: ControlWindow = None
 
-    def __init__(self, text, objectType: ObjectType, position: QPoint, rotation: RotateDir):
-        super(Item, self).__init__()
+    def __init__(self, labelText, objectType: ObjectType, position: QPoint, rotation: RotateDir):
+        super(QWidget, self).__init__()
         self.objectType = objectType
         self.setParent(di.Container.mainWindow())
         self.setFixedSize(8 * getGeometryStep(), 5 * getGeometryStep())
-        self.labelText = text
-        self.label = SLabel(text, parent=self, size=16, transparent=True)
+        self.labelText = labelText
+        self.label = SLabel(labelText, parent=self, size=16, transparent=True)
         labX = int(1.5 * getGeometryStep()) if objectType == ObjectType.VALVE and rotation.value % 2 == 1 else 0
-        self.label.setGeometry(labX, 0, 3 * getGeometryStep(), 3 * getGeometryStep())
-        self.picObject = PicObject(parent=self, objectType=objectType, rotation=rotation)
+        self.label.setGeometry(labX, 0, 3 * getGeometryStep(), int(2.2 * getGeometryStep()))
+        self.picObject = PicObject(labelText, parent=self, objectType=objectType, rotation=rotation)
         self.picObject.setGeometry(3 * getGeometryStep(), 0,
                                    self.picObject.geometry().width(), self.picObject.geometry().height())
         self.setMouseTracking(True)
