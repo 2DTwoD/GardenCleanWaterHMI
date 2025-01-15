@@ -3,21 +3,24 @@ from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtWidgets import QWidget, QGridLayout
 
 from misc import di
+from misc.updater import Updater
 from widgets.brics import SButton, SLabel
 from widgets.pic_object import PicObject
 from misc.own_types import ObjectType, RotateDir, getGeometryStep
 
 
-class ControlWindow(QWidget):
+class ControlWindow(QWidget, Updater):
     def __init__(self, labelText, objectType: ObjectType):
-        super(ControlWindow, self).__init__()
+        super().__init__()
         self.buttonTextList = ["Старт " + labelText, "Стоп " + labelText]
+        self.labelText = labelText
+        self.periphValues = di.Container.periphValues()
         if objectType == ObjectType.VALVE:
             self.buttonTextList = ["Открыть " + labelText, "Закрыть " + labelText]
         mousePos = di.Container.mousePos()
         self.setWindowTitle(labelText)
         self.setGeometry(mousePos.getGlobalPos().x(), mousePos.getGlobalPos().y(), 200, 100)
-        self.picObject = PicObject(labelText, objectType=objectType)
+        self.picObject = PicObject(objectType=objectType)
         self.on = SButton(self.buttonTextList[0])
         self.off = SButton(self.buttonTextList[1])
         self.grid = QGridLayout()
@@ -27,28 +30,38 @@ class ControlWindow(QWidget):
         self.setLayout(self.grid)
         self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowCloseButtonHint)
         self.setFixedSize(200, 100)
+        self.startUpdate()
 
+    def updateAction(self):
+        self.picObject.switchPic(self.periphValues.getValue(self.labelText))
 
-class Item(QWidget):
+    def closeEvent(self, event):
+        self.stopUpdate()
+
+class Item(QWidget, Updater):
     controlWindow: ControlWindow = None
 
     def __init__(self, labelText, objectType: ObjectType, position: QPoint, rotation: RotateDir):
-        super(QWidget, self).__init__()
+        super().__init__()
         self.objectType = objectType
+        self.periphValues = di.Container.periphValues()
         self.setParent(di.Container.mainWindow())
         self.setFixedSize(8 * getGeometryStep(), 5 * getGeometryStep())
         self.labelText = labelText
         self.label = SLabel(labelText, parent=self, size=16, transparent=True)
         labX = int(1.5 * getGeometryStep()) if objectType == ObjectType.VALVE and rotation.value % 2 == 1 else 0
         self.label.setGeometry(labX, 0, 3 * getGeometryStep(), int(2.2 * getGeometryStep()))
-        self.picObject = PicObject(labelText, parent=self, objectType=objectType, rotation=rotation)
+        self.picObject = PicObject(parent=self, objectType=objectType, rotation=rotation)
         self.picObject.setGeometry(3 * getGeometryStep(), 0,
                                    self.picObject.geometry().width(), self.picObject.geometry().height())
         self.setMouseTracking(True)
         self.label.setMouseTracking(True)
         self.move(position.x() - int(5.5 * getGeometryStep()), position.y() - int(2.5 * getGeometryStep()))
+        self.startUpdate()
 
     def mouseReleaseEvent(self, e):
         self.controlWindow = ControlWindow(self.labelText, self.objectType)
         self.controlWindow.show()
-        self.picObject.switchPic(1)
+
+    def updateAction(self):
+        self.picObject.switchPic(self.periphValues.getValue(self.labelText))

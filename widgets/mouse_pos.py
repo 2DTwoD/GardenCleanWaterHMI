@@ -7,7 +7,7 @@ from misc.own_types import getGeometryStep
 
 class MousePos(QWidget):
     def __init__(self):
-        super(MousePos, self).__init__()
+        super().__init__()
         self.pos = QPoint(0, 0)
         self.globPos = QPoint(0, 0)
         self.setGeometry(0, 0, 100, 40)

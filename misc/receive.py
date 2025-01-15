@@ -5,10 +5,10 @@ from misc.own_types import TankNumber
 
 
 class CommonDict(dict):
-    lock = threading.Lock()
 
     def __init__(self):
-        super(dict, self).__init__()
+        super().__init__()
+        self.lock = threading.Lock()
 
     def updateValues(self, jsonString):
         try:
@@ -27,18 +27,18 @@ class CommonDict(dict):
 
 class PeriphValues(CommonDict):
     def __init__(self):
-        super(CommonDict, self).__init__()
-        self.__setitem__("H1", 0)
-        self.__setitem__("H2", 0)
+        super().__init__()
+        self.__setitem__("H1", 1)
+        self.__setitem__("H2", 1)
         self.__setitem__("H3", 0)
         self.__setitem__("B1", 0)
         self.__setitem__("B2", 0)
         self.__setitem__("B3", 0)
         self.__setitem__("S4", 0)
-        self.__setitem__("S5", 0)
-        self.__setitem__("S6", 0)
-        self.__setitem__("C1", 0)
-        self.__setitem__("C2", 0)
+        self.__setitem__("S5", 1)
+        self.__setitem__("S6", 1)
+        self.__setitem__("C1", 1)
+        self.__setitem__("C2", 1)
         self.__setitem__("C3", 0)
         self.__setitem__("O1", 0)
         self.__setitem__("O2", 0)
@@ -47,8 +47,8 @@ class PeriphValues(CommonDict):
         self.__setitem__("D2", 0)
         self.__setitem__("D3", 0)
         self.__setitem__("D4", 0)
-        self.__setitem__("M1", 0)
-        self.__setitem__("M2", 0)
+        self.__setitem__("M1", 1)
+        self.__setitem__("M2", 1)
         self.__setitem__("M3", 0)
         self.__setitem__("M6", 0)
         self.__setitem__("M7", 0)
@@ -56,14 +56,14 @@ class PeriphValues(CommonDict):
 
 class OBvalues(CommonDict):
     def __init__(self):
-        super(CommonDict, self).__init__()
-        self.__setitem__("step", 0)
+        super().__init__()
+        self.__setitem__("step", 5)
         self.__setitem__("auto", 0)
-        self.__setitem__("s1St", 0)
-        self.__setitem__("s2St", 0)
-        self.__setitem__("s3St", 0)
-        self.__setitem__("s4St", 0)
-        self.__setitem__("s5St", 0)
+        self.__setitem__("s1St", 3)
+        self.__setitem__("s2St", 3)
+        self.__setitem__("s3St", 3)
+        self.__setitem__("s4St", 3)
+        self.__setitem__("s5St", 1)
         self.__setitem__("s6St", 0)
         self.__setitem__("s2Per", 0)
         self.__setitem__("s2TimeRem", 0)
@@ -77,7 +77,7 @@ class OBvalues(CommonDict):
 
 class CHBvalues(CommonDict):
     def __init__(self):
-        super(CommonDict, self).__init__()
+        super().__init__()
         self.__setitem__("step", 0)
         self.__setitem__("auto", 0)
         self.__setitem__("s1St", 0)
@@ -90,7 +90,7 @@ class CHBvalues(CommonDict):
 
 class TankValues(list):
     def __init__(self):
-        super(list, self).__init__()
+        super().__init__()
         self.append(CHBvalues())
         self.append(OBvalues())
         self.append(OBvalues())

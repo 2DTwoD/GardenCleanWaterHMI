@@ -34,7 +34,7 @@ class MainWindow(QMainWindow):
     S6: SensorMon = None
 
     def __init__(self):
-        super(MainWindow, self).__init__()
+        super().__init__()
         self.setWindowTitle("Очистка воды HMI")
         self.setFixedSize(1200, 800)
         self.setStyleSheet("background: white; background-image: url(pics/back.png)")
