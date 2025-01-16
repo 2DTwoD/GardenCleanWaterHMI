@@ -1,4 +1,3 @@
-import json
 import threading
 
 from misc.own_types import TankNumber
@@ -12,8 +11,8 @@ class CommonDict(dict):
 
     def updateValues(self, jsonString):
         try:
-            newValues = json.loads(jsonString)
-        except ValueError:
+            newValues = eval(jsonString)
+        except:
             print('Ошибка в JSON')
             return
         with self.lock:
@@ -57,13 +56,13 @@ class PeriphValues(CommonDict):
 class OBvalues(CommonDict):
     def __init__(self):
         super().__init__()
-        self.__setitem__("step", 5)
+        self.__setitem__("step", 0)
         self.__setitem__("auto", 0)
-        self.__setitem__("s1St", 3)
-        self.__setitem__("s2St", 3)
-        self.__setitem__("s3St", 3)
-        self.__setitem__("s4St", 3)
-        self.__setitem__("s5St", 1)
+        self.__setitem__("s1St", 0)
+        self.__setitem__("s2St", 0)
+        self.__setitem__("s3St", 0)
+        self.__setitem__("s4St", 0)
+        self.__setitem__("s5St", 0)
         self.__setitem__("s6St", 0)
         self.__setitem__("s2Per", 0)
         self.__setitem__("s2TimeRem", 0)

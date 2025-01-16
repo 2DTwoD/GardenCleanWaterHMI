@@ -22,7 +22,7 @@ class TankStroke(list):
 
         self.label = SLabel(self.tankLabelList[tankNumber.value], transparent=True, color="gray", align=Align.VCENTER)
         self.stepLabel = SLabel("Шаг Х", transparent=True, align=Align.VCENTER)
-        self.seqButton = SButton("Последовательность")
+        self.seqButton = SButton("Шаги")
         self.autoButton = SButton("Автомат")
         self.manButton = SButton("Ручной")
 
@@ -57,11 +57,13 @@ class ComStroke(list):
         super().__init__()
         self.statusList = ["X", "V"]
         self.statusColorList = ["red", "green"]
+        self.comm = di.Container.comm()
         self.connectLabel = SLabel("Выбор COM-порта:", color="gray", transparent=True)
         self.connectCombo = SCombo()
-        self.connectCombo.addItems(["COM1", "COM2"])
-        self.connectButton = SButton("Подключиться к МК")
-        self.disconnectButton = SButton("Отключиться от МК")
+
+        self.connectCombo.addItems(self.comm.getAvailablePorts())
+        self.connectButton = SButton("Подключиться")
+        self.disconnectButton = SButton("Отключиться")
         self.statusLabel = SLabel(self.statusList[0], color="white", background="red", align=Align.CENTER, bold=True)
 
         self.append(self.connectLabel)
@@ -69,6 +71,15 @@ class ComStroke(list):
         self.append(self.connectButton)
         self.append(self.disconnectButton)
         self.append(self.statusLabel)
+
+        self.connectButton.clicked.connect(self.connect)
+        self.connectButton.clicked.connect(self.disconnect)
+
+    def connect(self):
+        self.comm.connect(self.connectCombo.currentText())
+
+    def disconnect(self):
+        self.comm.disconnect()
 
 
 class ControlPanel(QWidget, Updater):
@@ -81,7 +92,7 @@ class ControlPanel(QWidget, Updater):
         self.tankValues = di.Container.tankValues()
 
         self.setParent(di.Container.mainWindow())
-        self.setGeometry(225, 600, 600, 200)
+        self.setGeometry(175, 600, 650, 200)
         self.chbSeqPanel = TankStroke(TankNumber.CHB)
         self.ob1SeqPanel = TankStroke(TankNumber.OB1)
         self.ob2SeqPanel = TankStroke(TankNumber.OB2)
