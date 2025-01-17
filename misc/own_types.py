@@ -21,6 +21,12 @@ class RotateDir(Enum):
     LEFT = 2
     UP = 3
 
+class CommStatus(Enum):
+    CONNECT = "V"
+    DISCONNECT = "X"
+    LINK_ERROR = "Ошибка связи"
+    RECEIVE_ERROR = "Ошибка передачи"
+
 class Align(Enum):
     RIGHT = Qt.AlignmentFlag.AlignRight
     LEFT = Qt.AlignmentFlag.AlignLeft

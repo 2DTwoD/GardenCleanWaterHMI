@@ -14,10 +14,12 @@ class CommonDict(dict):
             newValues = eval(jsonString)
         except:
             print('Ошибка в JSON')
-            return
+            return False
         with self.lock:
             if sorted(self.keys()) == sorted(newValues.keys()):
                 self.update(newValues)
+                return True
+            return False
 
     def getValue(self, key):
         with self.lock:

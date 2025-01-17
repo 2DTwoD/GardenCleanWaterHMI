@@ -73,13 +73,20 @@ class ComStroke(list):
         self.append(self.statusLabel)
 
         self.connectButton.clicked.connect(self.connect)
-        self.connectButton.clicked.connect(self.disconnect)
+        self.disconnectButton.clicked.connect(self.disconnect)
 
     def connect(self):
         self.comm.connect(self.connectCombo.currentText())
 
     def disconnect(self):
         self.comm.disconnect()
+
+    def setStatus(self, ok: bool, label: str):
+        self.statusLabel.setBackground(self.statusColorList[ok])
+        self.statusLabel.setText(label)
+
+    def setSelectable(self, value):
+        self.connectCombo.setEnabled(value)
 
 
 class ControlPanel(QWidget, Updater):
@@ -90,6 +97,7 @@ class ControlPanel(QWidget, Updater):
         self.grid.setSpacing(3)
         self.rowNum = 0
         self.tankValues = di.Container.tankValues()
+        self.comm = di.Container.comm()
 
         self.setParent(di.Container.mainWindow())
         self.setGeometry(175, 600, 650, 200)
@@ -130,6 +138,8 @@ class ControlPanel(QWidget, Updater):
         self.drawStepAuto(self.ob3SeqPanel, self.tankValues.get(TankNumber.OB3, "step"),
                           self.tankValues.get(TankNumber.OB3, "auto"))
         self.tankQueue.setText(self.getQueueLabelText(self.tankValues.get(TankNumber.CHB, "queue")))
+        self.comStroke.setStatus(self.comm.connected(), self.comm.getStatus())
+        self.comStroke.setSelectable(self.comm.disconnected())
 
     @staticmethod
     def drawStepAuto(tankStroke: TankStroke, step, auto):

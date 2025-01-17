@@ -75,5 +75,6 @@ class MainWindow(QMainWindow):
         self.mousePos.updatePos(event.pos().x(), event.pos().y())
 
     def closeEvent(self, event):
+        di.Container.comm().disconnect()
         QApplication.closeAllWindows()
 

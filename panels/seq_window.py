@@ -59,10 +59,17 @@ class SeqStroke(list):
         self.stepLabel.setBackground(background)
 
     def setTimeRemain(self, timeRemainMillis):
-        self.timeRemainLabel.setText(str(datetime.timedelta(milliseconds=timeRemainMillis)))
+        self.timeRemainLabel.setText(self.getTimeStroke(timeRemainMillis))
 
     def setPeriod(self, periodMillis):
-        self.periodLabel.setText(str(datetime.timedelta(milliseconds=periodMillis)))
+        self.periodLabel.setText(self.getTimeStroke(periodMillis))
+
+    def getTimeStroke(self, timeMillis):
+        time = int(timeMillis / 1000)
+        seconds = time % 60
+        minutes = int(time / 60) % 60
+        hours = int(time / 3600)
+        return f"{hours:02}:{minutes:02}:{seconds:02}"
 
 
 class SeqWindow(QWidget, Updater):
@@ -74,10 +81,11 @@ class SeqWindow(QWidget, Updater):
         self.rowNum = 0
         self.tankNumber = tankNumber
         self.tankValues = di.Container.tankValues()
+        self.comm = di.Container.comm()
         self.setStyleSheet("background: gray")
         self.addRow(self.getHeader())
         if tankNumber == TankNumber.CHB:
-            self.step1Stroke = SeqStroke(1, "Подготовка", "Нет", startDesc="Уровень выше S5",
+            self.step1Stroke = SeqStroke(1, "Подготовка", "Нет", startDesc="Уровень ниже S5",
                                          endDesc="В очереди есть бочка отстойника")
             self.step2Stroke = SeqStroke(2, "Заполнение M7", "Открыть D4", endDesc="По таймеру", timerEN=True)
             self.step3Stroke = SeqStroke(3, "Наполнение чистой бочки", "Старт M7", lockDesc="Уровень выше S4",
@@ -109,6 +117,7 @@ class SeqWindow(QWidget, Updater):
             self.setFixedSize(850, 330)
 
         self.resetButton = SButton("Сброс последовательности", color="white", background="red")
+        self.resetButton.clicked.connect(self.resetSeq)
         self.grid.addWidget(self.resetButton, self.rowNum, 0, 1, 3)
 
         self.setLayout(self.grid)
@@ -117,6 +126,9 @@ class SeqWindow(QWidget, Updater):
         self.move(mousePos.getGlobalPos().x() - int(self.geometry().width() / 2),
                   mousePos.getGlobalPos().y() - self.geometry().height() - 50)
         self.startUpdate()
+
+    def resetSeq(self):
+        self.comm.send(f"[set.ob{self.tankNumber.value}step.0]")
 
     def updateAction(self):
         self.updateStroke(self.step1Stroke, self.tankValues.get(self.tankNumber, "step"),

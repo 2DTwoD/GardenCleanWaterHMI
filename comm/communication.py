@@ -1,12 +1,14 @@
 import threading
 import time
 
+from serial.serialutil import SerialException
+
 from misc import di
 
 import serial.tools.list_ports
 import serial
 
-from misc.own_types import TankNumber
+from misc.own_types import TankNumber, CommStatus
 
 
 class Comm:
@@ -22,37 +24,77 @@ class Comm:
                                    di.Container.tankValues().select(TankNumber.OB2),
                                    di.Container.tankValues().select(TankNumber.OB3)]
         self.cycleIndex = 0
-        self.sendCommand = ""
-        self.stop = True
+        self.errorCounter = 0
+        self.sendCommand = []
+        self.start = False
+        self.status = CommStatus.DISCONNECT
+        self.bufferSize = 256
+        self.sendPeriod = 0.1
+        self.readTimeOut = 0.5
+
+        self.maxCountForErrorVis = 20
+        self.errorCounter = self.maxCountForErrorVis
 
     def send(self, command: str):
-        pass
+        if command not in self.sendCommand:
+            self.sendCommand.append(command)
 
     def runSending(self, device: str):
         try:
             self.port = serial.Serial(device, baudrate=self.baudrate)
-            while(not self.stop):
+            self.port.timeout = self.readTimeOut
+
+            while self.start:
+                time.sleep(self.sendPeriod)
                 self.port.reset_input_buffer()
-                self.port.write(self.cycleCommands[self.cycleIndex].encode("ascii"))
-                count = 512
-                resp = ""
-                while count > 0 and not self.stop:
-                    read = self.port.read()
-                    if read == b'\n':
-                        break
-                    if read != b'':
-                        resp += read.decode()
-                    count -= 1
-                self.cycleUpdatesValues[self.cycleIndex].updateValues(resp)
+
+                if self.sendCommand:
+                    self.port.write(self.sendCommand.pop(0).encode("ascii"))
+                    bad, resp = self.checkResponse(self.port.read(self.bufferSize), b'o', b'k', b"ok")
+                    if bad:
+                        self.status = CommStatus.RECEIVE_ERROR
+                    continue
+                else:
+                    self.port.write(self.cycleCommands[self.cycleIndex].encode("ascii"))
+                    bad, resp  = self.checkResponse(self.port.read(self.bufferSize), b'{', b'}')
+
+                if bad or not self.cycleUpdatesValues[self.cycleIndex].updateValues(resp):
+                    self.status = CommStatus.RECEIVE_ERROR
+                    continue
+
                 self.cycleIndex += 1
                 if self.cycleIndex >= len(self.cycleCommands):
                     self.cycleIndex = 0
-                time.sleep(0.05)
-        except:
-            print("что-то пошло не так")
+
+                if self.status != CommStatus.CONNECT:
+                    self.errorCounter -= 1
+                    if self.errorCounter <= 0:
+                        self.status = CommStatus.CONNECT
+                        self.errorCounter = self.maxCountForErrorVis
+
+        except SerialException:
+            self.status = CommStatus.LINK_ERROR
+        else:
+            self.status = CommStatus.DISCONNECT
         finally:
-            if self.port is not None and self.port.is_open:
-                self.port.close()
+            self.port.close()
+
+    def checkResponse(self, read, startChar, endChar, content=None):
+        try:
+            start = read.index(startChar)
+            end = read.index(endChar)
+
+            if start == -1 or end == -1:
+                return True, None
+
+            subString = read[start: end +1]
+
+            if content is not None and subString != content:
+                return True, None
+
+            return False, subString
+        except:
+            return True, None
 
     def getAvailablePorts(self):
         result = []
@@ -62,20 +104,23 @@ class Comm:
         return result
 
     def connect(self, device: str):
+        self.status = CommStatus.CONNECT
         if self.connected():
             return
         self.thread = threading.Thread(target=self.runSending, args=(device, ))
         self.thread.daemon = True
+        self.start = True
         self.thread.start()
-        self.stop = False
+
+    def disconnect(self):
+        self.start = False
+        self.status = CommStatus.DISCONNECT
 
     def connected(self):
         return self.port is not None and self.port.is_open
 
-    def disconnect(self):
-        if self.disconnected():
-            return
-        self.stop = True
-
     def disconnected(self):
-        return self.port is None or self.port.closed
+        return not self.connected()
+
+    def getStatus(self):
+        return self.status.value

@@ -5,7 +5,7 @@ class Updater:
 
     def __init__(self):
         self.timer = QTimer()
-        self.timer.setInterval(500)
+        self.timer.setInterval(1000)
         self.timer.timeout.connect(self.startUpdate)
         self.timer.daemon = True
 
