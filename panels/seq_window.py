@@ -23,7 +23,7 @@ class StatusColors(list):
 
 class SeqStroke(list):
     def __init__(self, stepNumber, desc, actionDesc, startDesc="Всегда", lockDesc="Нет",
-                 endDesc="Не указано", timerEN=False):
+                 endDesc="Не указано", timerEN=False, timerVarName="undefined"):
         super().__init__()
         self.stepNumber = stepNumber
         self.stepLabel = SLabel(f"Шаг {stepNumber}")
@@ -45,10 +45,13 @@ class SeqStroke(list):
             self.periodLabel = SLabel("0")
             self.editPeriodLine = SField(numeric=True, minNum=1, maxNum=999999, length=6, width=50)
             self.applyButton = SButton("Применить")
+            self.timerVarName = timerVarName
+            self.comm = di.Container.comm()
             self.append(self.periodLabel)
             self.append(self.timeRemainLabel)
             self.append(self.editPeriodLine)
             self.append(self.applyButton)
+            self.applyButton.clicked.connect(self.applyButonClicked)
 
     def setStatus(self, status):
         self.statusLabel.setText(di.Container.statusList()[status])
@@ -71,6 +74,13 @@ class SeqStroke(list):
         hours = int(time / 3600)
         return f"{hours:02}:{minutes:02}:{seconds:02}"
 
+    def applyButonClicked(self):
+        try:
+            value = int(self.editPeriodLine.text())
+        except:
+            return
+        self.comm.send(f"[set.{self.timerVarName}.{value * 1000}]")
+
 
 class SeqWindow(QWidget, Updater):
     def __init__(self, windowTitle, tankNumber: TankNumber):
@@ -87,25 +97,29 @@ class SeqWindow(QWidget, Updater):
         if tankNumber == TankNumber.CHB:
             self.step1Stroke = SeqStroke(1, "Подготовка", "Нет", startDesc="Уровень ниже S5",
                                          endDesc="В очереди есть бочка отстойника")
-            self.step2Stroke = SeqStroke(2, "Заполнение M7", "Открыть D4", endDesc="По таймеру", timerEN=True)
-            self.step3Stroke = SeqStroke(3, "Наполнение чистой бочки", "Старт M7", lockDesc="Уровень выше S4",
-                                         endDesc="Бочка отстойника опорожнена")
+            self.step2Stroke = SeqStroke(2, "Заполнение M7", "Открыть D4",
+                                         endDesc="По таймеру", timerEN=True, timerVarName="chbs2per")
+            self.step3Stroke = SeqStroke(3, "Наполнение чистой бочки", "Старт M7",
+                                         lockDesc="Уровень выше S4", endDesc="Бочка отстойника опорожнена")
             self.addRow(self.step1Stroke)
             self.addRow(self.step2Stroke)
             self.addRow(self.step3Stroke)
             self.setFixedSize(850, 230)
         else:
-            self.step1Stroke = SeqStroke(1, "Подготовка", "Нет", endDesc=f"Уровень ниже H{tankNumber.value}")
+            self.step1Stroke = SeqStroke(1, "Подготовка", "Нет",
+                                         endDesc=f"Уровень ниже H{tankNumber.value}")
             self.step2Stroke = SeqStroke(2, "Слив остатка", f"Открыть D{tankNumber.value}",
-                                         endDesc="По таймеру", timerEN=True)
-            self.step3Stroke = SeqStroke(3, "Промывка", f"Открыть C{tankNumber.value}, D{tankNumber.value}",
-                                         endDesc="По таймеру", timerEN=True)
+                                         endDesc="По таймеру", timerEN=True, timerVarName=f"ob{tankNumber.value}s2per")
+            self.step3Stroke = SeqStroke(3, "Промывка",
+                                         f"Открыть C{tankNumber.value}, D{tankNumber.value}",
+                                         endDesc="По таймеру", timerEN=True, timerVarName=f"ob{tankNumber.value}s3per")
             self.step4Stroke = SeqStroke(4, "Заполнение",
                                          f"Открыть C{tankNumber.value}, старт M{tankNumber.value} по таймеру",
-                                         endDesc=f"Уровень выше В{tankNumber.value}", timerEN=True)
+                                         endDesc=f"Уровень выше В{tankNumber.value}", timerEN=True,
+                                         timerVarName=f"ob{tankNumber.value}s4per")
             self.step5Stroke = SeqStroke(5, "Выдержка", "Нет",
-                                         endDesc="По таймеру", timerEN=True)
-            self.step6Stroke = SeqStroke(6, "Слив", f"Открыть O{tankNumber.value}",
+                                         endDesc="По таймеру", timerEN=True, timerVarName=f"ob{tankNumber.value}s5per")
+            self.step6Stroke = SeqStroke(6, "Опорожнение", f"Открыть O{tankNumber.value}",
                                          startDesc="Разрешение от чистой бочки", lockDesc="Уровень выше S4",
                                          endDesc=f"Уровень ниже H{tankNumber.value}")
             self.addRow(self.step1Stroke)
@@ -117,8 +131,11 @@ class SeqWindow(QWidget, Updater):
             self.setFixedSize(850, 330)
 
         self.resetButton = SButton("Сброс последовательности", color="white", background="red")
+        self.nextButton = SButton("Пропустить шаг", color="white", background="yellow")
         self.resetButton.clicked.connect(self.resetSeq)
+        self.nextButton.clicked.connect(self.nextStep)
         self.grid.addWidget(self.resetButton, self.rowNum, 0, 1, 3)
+        self.grid.addWidget(self.nextButton, self.rowNum, 3, 1, 2)
 
         self.setLayout(self.grid)
         self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
@@ -128,7 +145,16 @@ class SeqWindow(QWidget, Updater):
         self.startUpdate()
 
     def resetSeq(self):
-        self.comm.send(f"[set.ob{self.tankNumber.value}step.0]")
+        if self.tankNumber == TankNumber.CHB:
+            self.comm.send("[set.chbstep.10]")
+        else:
+            self.comm.send(f"[set.ob{self.tankNumber.value}step.10]")
+
+    def nextStep(self):
+        if self.tankNumber == TankNumber.CHB:
+            self.comm.send("[set.chbnext.1]")
+        else:
+            self.comm.send(f"[set.ob{self.tankNumber.value}next.1]")
 
     def updateAction(self):
         self.updateStroke(self.step1Stroke, self.tankValues.get(self.tankNumber, "step"),

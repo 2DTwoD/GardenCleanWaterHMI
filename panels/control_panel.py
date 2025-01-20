@@ -19,6 +19,7 @@ class TankStroke(list):
         self.seqWindow = None
         self.tankNumber = tankNumber
         self.tankLabelList = di.TankLabelList()
+        self.comm = di.Container.comm()
 
         self.label = SLabel(self.tankLabelList[tankNumber.value], transparent=True, color="gray", align=Align.VCENTER)
         self.stepLabel = SLabel("Шаг Х", transparent=True, align=Align.VCENTER)
@@ -50,6 +51,10 @@ class TankStroke(list):
             manColor = "yellow"
         self.autoButton.setBackground(autoColor)
         self.manButton.setBackground(manColor)
+
+    def autoButton(self):
+
+        self.comm.send(f"set.ob{self.tankNumber.value}auto.1")
 
 
 class ComStroke(list):

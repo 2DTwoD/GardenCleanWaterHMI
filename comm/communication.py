@@ -43,12 +43,14 @@ class Comm:
         try:
             self.port = serial.Serial(device, baudrate=self.baudrate)
             self.port.timeout = self.readTimeOut
+            sendFlag = False
 
             while self.start:
                 time.sleep(self.sendPeriod)
                 self.port.reset_input_buffer()
 
-                if self.sendCommand:
+                if self.sendCommand and sendFlag:
+                    sendFlag = False
                     self.port.write(self.sendCommand.pop(0).encode("ascii"))
                     bad, resp = self.checkResponse(self.port.read(self.bufferSize), b'o', b'k', b"ok")
                     if bad:
@@ -57,7 +59,7 @@ class Comm:
                 else:
                     self.port.write(self.cycleCommands[self.cycleIndex].encode("ascii"))
                     bad, resp  = self.checkResponse(self.port.read(self.bufferSize), b'{', b'}')
-
+                sendFlag = True
                 if bad or not self.cycleUpdatesValues[self.cycleIndex].updateValues(resp):
                     self.status = CommStatus.RECEIVE_ERROR
                     continue

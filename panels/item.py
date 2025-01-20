@@ -15,6 +15,7 @@ class ControlWindow(QWidget, Updater):
         self.buttonTextList = ["Старт " + labelText, "Стоп " + labelText]
         self.labelText = labelText
         self.periphValues = di.Container.periphValues()
+        self.comm = di.Container.comm()
         if objectType == ObjectType.VALVE:
             self.buttonTextList = ["Открыть " + labelText, "Закрыть " + labelText]
         mousePos = di.Container.mousePos()
@@ -30,7 +31,15 @@ class ControlWindow(QWidget, Updater):
         self.setLayout(self.grid)
         self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowCloseButtonHint)
         self.setFixedSize(200, 100)
+        self.on.clicked.connect(self.onButtonClick)
+        self.off.clicked.connect(self.offButtonClick)
         self.startUpdate()
+
+    def onButtonClick(self):
+        self.comm.send(f"[set.{self.labelText.lower()}.1]")
+
+    def offButtonClick(self):
+        self.comm.send(f"[set.{self.labelText.lower()}.0]")
 
     def updateAction(self):
         self.picObject.switchPic(self.periphValues.getValue(self.labelText))
