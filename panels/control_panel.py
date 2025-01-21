@@ -34,6 +34,8 @@ class TankStroke(list):
         self.append(self.manButton)
 
         self.seqButton.clicked.connect(self.clickOnButton)
+        self.autoButton.clicked.connect(lambda: self.autoManButton(1))
+        self.manButton.clicked.connect(lambda: self.autoManButton(0))
 
     def clickOnButton(self):
         self.seqWindow = SeqWindow(self.tankLabelList[self.tankNumber.value], self.tankNumber)
@@ -46,15 +48,17 @@ class TankStroke(list):
         autoColor = "lightgray"
         manColor = "lightgray"
         if auto > 0:
-            autoColor = "green"
+            autoColor = "#00FF00"
         else:
             manColor = "yellow"
         self.autoButton.setBackground(autoColor)
         self.manButton.setBackground(manColor)
 
-    def autoButton(self):
-
-        self.comm.send(f"set.ob{self.tankNumber.value}auto.1")
+    def autoManButton(self, value):
+        if self.tankNumber == TankNumber.CHB:
+            self.comm.send(f"[set.chbauto.{value}]")
+        else:
+            self.comm.send(f"[set.ob{self.tankNumber.value}auto.{value}]")
 
 
 class ComStroke(list):
@@ -155,5 +159,8 @@ class ControlPanel(QWidget, Updater):
     def getQueueLabelText(rawQueue: str):
         result = ""
         for c in rawQueue:
-            result += c + "-->"
+            if c != "0":
+                result += c + "-->"
+        if not result:
+            return "Очередь пуста"
         return result[:-3]

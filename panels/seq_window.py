@@ -131,7 +131,7 @@ class SeqWindow(QWidget, Updater):
             self.setFixedSize(850, 330)
 
         self.resetButton = SButton("Сброс последовательности", color="white", background="red")
-        self.nextButton = SButton("Пропустить шаг", color="white", background="yellow")
+        self.nextButton = SButton("Пропустить шаг", color="black", background="yellow")
         self.resetButton.clicked.connect(self.resetSeq)
         self.nextButton.clicked.connect(self.nextStep)
         self.grid.addWidget(self.resetButton, self.rowNum, 0, 1, 3)
@@ -146,9 +146,9 @@ class SeqWindow(QWidget, Updater):
 
     def resetSeq(self):
         if self.tankNumber == TankNumber.CHB:
-            self.comm.send("[set.chbstep.10]")
+            self.comm.send("[set.chbstep.0]")
         else:
-            self.comm.send(f"[set.ob{self.tankNumber.value}step.10]")
+            self.comm.send(f"[set.ob{self.tankNumber.value}step.0]")
 
     def nextStep(self):
         if self.tankNumber == TankNumber.CHB:
@@ -181,6 +181,8 @@ class SeqWindow(QWidget, Updater):
                               self.tankValues.get(self.tankNumber, "s5Per"))
             self.updateStroke(self.step6Stroke, self.tankValues.get(self.tankNumber, "step"),
                               self.tankValues.get(self.tankNumber, "s6St"))
+        self.resetButton.setEnabled(self.tankValues.get(self.tankNumber, "auto"))
+        self.nextButton.setEnabled(self.tankValues.get(self.tankNumber, "auto"))
 
     @staticmethod
     def updateStroke(stroke: SeqStroke, step, status, timeRemain=None, period=None):

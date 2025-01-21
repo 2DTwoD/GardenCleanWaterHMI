@@ -36,6 +36,8 @@ class Comm:
         self.errorCounter = self.maxCountForErrorVis
 
     def send(self, command: str):
+        if self.disconnected():
+            return
         if command not in self.sendCommand:
             self.sendCommand.append(command)
 

@@ -31,15 +31,12 @@ class ControlWindow(QWidget, Updater):
         self.setLayout(self.grid)
         self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowCloseButtonHint)
         self.setFixedSize(200, 100)
-        self.on.clicked.connect(self.onButtonClick)
-        self.off.clicked.connect(self.offButtonClick)
+        self.on.clicked.connect(lambda: self.onOffButtonClick(1))
+        self.off.clicked.connect(lambda: self.onOffButtonClick(0))
         self.startUpdate()
 
-    def onButtonClick(self):
-        self.comm.send(f"[set.{self.labelText.lower()}.1]")
-
-    def offButtonClick(self):
-        self.comm.send(f"[set.{self.labelText.lower()}.0]")
+    def onOffButtonClick(self, value):
+        self.comm.send(f"[set.{self.labelText.lower()}.{value}]")
 
     def updateAction(self):
         self.picObject.switchPic(self.periphValues.getValue(self.labelText))
