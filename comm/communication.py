@@ -16,7 +16,7 @@ class Comm:
         super().__init__()
         self.thread: threading.Thread = None
         self.port: serial.Serial = None
-        self.baudrate = 115200
+        self.baudrate = 19200
         self.cycleCommands = ["[get.periph]", "[get.chb]", "[get.ob1]", "[get.ob2]", "[get.ob3]"]
         self.cycleUpdatesValues = [di.Container.periphValues(),
                                    di.Container.tankValues().select(TankNumber.CHB),
@@ -29,7 +29,7 @@ class Comm:
         self.start = False
         self.status = CommStatus.DISCONNECT
         self.bufferSize = 256
-        self.sendPeriod = 0.1
+        self.sendPeriod = 0.01
         self.readTimeOut = 0.5
 
         self.maxCountForErrorVis = 20
@@ -49,7 +49,11 @@ class Comm:
 
             while self.start:
                 time.sleep(self.sendPeriod)
+
+                if self.status == CommStatus.RECEIVE_ERROR:
+                    pass
                 self.port.reset_input_buffer()
+                self.port.reset_output_buffer()
 
                 if self.sendCommand and sendFlag:
                     sendFlag = False
@@ -121,7 +125,7 @@ class Comm:
         self.status = CommStatus.DISCONNECT
 
     def connected(self):
-        return self.port is not None and self.port.is_open
+        return self.port is not None and self.port.is_open and self.thread.is_alive()
 
     def disconnected(self):
         return not self.connected()

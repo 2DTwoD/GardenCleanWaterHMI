@@ -38,6 +38,8 @@ class TankStroke(list):
         self.manButton.clicked.connect(lambda: self.autoManButton(0))
 
     def clickOnButton(self):
+        if self.seqWindow is not None:
+            self.seqWindow.close()
         self.seqWindow = SeqWindow(self.tankLabelList[self.tankNumber.value], self.tankNumber)
         self.seqWindow.show()
 
@@ -118,10 +120,10 @@ class ControlPanel(QWidget, Updater):
         self.queueLabel = SLabel("Очередь опорожнения:", transparent=True, align=Align.VCENTER, color="gray")
         self.tankQueue = SLabel("X-->X-->X", size=12, transparent=True, align=Align.VCENTER)
 
-        self.addRow(self.chbSeqPanel)
         self.addRow(self.ob1SeqPanel)
         self.addRow(self.ob2SeqPanel)
         self.addRow(self.ob3SeqPanel)
+        self.addRow(self.chbSeqPanel)
         self.grid.addWidget(self.queueLabel, self.rowNum, 0, 1, 1)
         self.grid.addWidget(self.tankQueue, self.rowNum, 1, 1, 1)
         self.rowNum += 1

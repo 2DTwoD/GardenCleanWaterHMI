@@ -100,7 +100,7 @@ class SeqWindow(QWidget, Updater):
             self.step2Stroke = SeqStroke(2, "Заполнение M7", "Открыть D4",
                                          endDesc="По таймеру", timerEN=True, timerVarName="chbs2per")
             self.step3Stroke = SeqStroke(3, "Наполнение чистой бочки", "Старт M7",
-                                         lockDesc="Уровень выше S4", endDesc="Бочка отстойника опорожнена")
+                                         lockDesc="Уровень выше S4", endDesc="Бочка отстойника опорожнена или очередь пуста")
             self.addRow(self.step1Stroke)
             self.addRow(self.step2Stroke)
             self.addRow(self.step3Stroke)
@@ -146,9 +146,9 @@ class SeqWindow(QWidget, Updater):
 
     def resetSeq(self):
         if self.tankNumber == TankNumber.CHB:
-            self.comm.send("[set.chbstep.0]")
+            self.comm.send("[set.chbagain]")
         else:
-            self.comm.send(f"[set.ob{self.tankNumber.value}step.0]")
+            self.comm.send(f"[set.ob{self.tankNumber.value}again]")
 
     def nextStep(self):
         if self.tankNumber == TankNumber.CHB:

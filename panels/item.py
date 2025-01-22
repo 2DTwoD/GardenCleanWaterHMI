@@ -45,12 +45,12 @@ class ControlWindow(QWidget, Updater):
         self.stopUpdate()
 
 class Item(QWidget, Updater):
-    controlWindow: ControlWindow = None
 
     def __init__(self, labelText, objectType: ObjectType, position: QPoint, rotation: RotateDir):
         super().__init__()
         self.objectType = objectType
         self.periphValues = di.Container.periphValues()
+        self.controlWindow = None
         self.setParent(di.Container.mainWindow())
         self.setFixedSize(8 * getGeometryStep(), 5 * getGeometryStep())
         self.labelText = labelText
@@ -66,6 +66,8 @@ class Item(QWidget, Updater):
         self.startUpdate()
 
     def mouseReleaseEvent(self, e):
+        if self.controlWindow is not None:
+            self.controlWindow.close()
         self.controlWindow = ControlWindow(self.labelText, self.objectType)
         self.controlWindow.show()
 
