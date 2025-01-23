@@ -3,17 +3,21 @@ from PyQt6.QtWidgets import QLabel
 
 from misc.own_types import ObjectType, RotateDir
 
+pumpPicPathList = ['pics/pump_stopped.png', 'pics/pump_started.png']
+valvePicPathList = ['pics/valve_closed.png', 'pics/valve_opened.png']
 
 class PicObject(QLabel):
     def __init__(self, parent=None, objectType=ObjectType.PUMP, rotation=RotateDir.RIGHT):
-        super().__init__()
-        self.setParent(parent)
+        super().__init__(parent=parent)
+
         self.pixmap = None
         self.transform = QTransform()
         self.transform.rotate(90 * rotation.value)
-        self.picPathList = ['pics/pump_stopped.png', 'pics/pump_started.png']
+
+        self.picPathList = pumpPicPathList
         if objectType == ObjectType.VALVE:
-            self.picPathList = ['pics/valve_closed.png', 'pics/valve_opened.png']
+            self.picPathList = valvePicPathList
+
         self.setStyleSheet("background: transparent;")
         self.switchPic()
         self.setGeometry(0, 0, 50, 50)

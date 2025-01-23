@@ -1,38 +1,32 @@
-import datetime
-
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget, QGridLayout
 
 from misc import di
-from misc.own_types import TankNumber, Align
+from misc.own_types import TankNumber, Align, getGeometryStep
 from misc.updater import Updater
 from widgets.brics import SLabel, SButton, SField
 
-
-class StatusList(list):
-    def __init__(self):
-        super().__init__()
-        self.extend(["Ожидание", "Активен", "Заблокирован", "Завершен", "Не определён"])
-
-
-class StatusColors(list):
-    def __init__(self):
-        super().__init__()
-        self.extend(["lightgray", "lightblue", "yellow", "lightgreen", "red"])
-
+statusList = ["Ожидание", "Активен", "Заблокир.", "Завершен", "Не определён"]
+statusColorList = ["lightgray", "lightblue", "yellow", "lightgreen", "red"]
+stepBackgroundList = ["lightgray", "lightblue"]
+resetSeqButtonColors = ["gray", "red"]
+nextStepButtonColors = ["gray", "yellow"]
 
 class SeqStroke(list):
-    def __init__(self, stepNumber, desc, actionDesc, startDesc="Всегда", lockDesc="Нет",
+    def __init__(self, stepNumber, desc, actionDesc, startDesc="Всегда", lockDesc="Ручной режим",
                  endDesc="Не указано", timerEN=False, timerVarName="undefined"):
         super().__init__()
+
         self.stepNumber = stepNumber
+
         self.stepLabel = SLabel(f"Шаг {stepNumber}")
         self.descLabel = SLabel(desc)
-        self.statusLabel = SLabel(di.Container.statusList()[0])
+        self.statusLabel = SLabel(statusList[0], background=statusColorList[0])
         self.actionLabel = SLabel(actionDesc)
         self.startLabel = SLabel(startDesc)
         self.lockLabel = SLabel(lockDesc)
         self.endLabel = SLabel(endDesc)
+
         self.append(self.stepLabel)
         self.append(self.descLabel)
         self.append(self.statusLabel)
@@ -40,26 +34,29 @@ class SeqStroke(list):
         self.append(self.startLabel)
         self.append(self.lockLabel)
         self.append(self.endLabel)
+
         if timerEN:
+            self.comm = di.Container.comm()
+            self.timerVarName = timerVarName
+
             self.timeRemainLabel = SLabel("0")
             self.periodLabel = SLabel("0")
             self.editPeriodLine = SField(numeric=True, minNum=1, maxNum=999999, length=6, width=50)
             self.applyButton = SButton("Применить")
-            self.timerVarName = timerVarName
-            self.comm = di.Container.comm()
+
             self.append(self.periodLabel)
             self.append(self.timeRemainLabel)
             self.append(self.editPeriodLine)
             self.append(self.applyButton)
+
             self.applyButton.clicked.connect(self.applyButonClicked)
 
     def setStatus(self, status):
-        self.statusLabel.setText(di.Container.statusList()[status])
-        self.statusLabel.setBackground(di.Container.statusColors()[status])
+        self.statusLabel.setText(statusList[status])
+        self.statusLabel.setBackground(statusColorList[status])
 
     def setStepBackground(self, currentStep):
-        background = "lightblue" if currentStep == self.stepNumber else "lightgray"
-        self.stepLabel.setBackground(background)
+        self.stepLabel.setBackground(stepBackgroundList[currentStep == self.stepNumber])
 
     def setTimeRemain(self, timeRemainMillis):
         self.timeRemainLabel.setText(self.getTimeStroke(timeRemainMillis))
@@ -78,6 +75,7 @@ class SeqStroke(list):
         try:
             value = int(self.editPeriodLine.text())
         except:
+            print("Неправильный ввод")
             return
         self.comm.send(f"[set.{self.timerVarName}.{value * 1000}]")
 
@@ -85,14 +83,15 @@ class SeqStroke(list):
 class SeqWindow(QWidget, Updater):
     def __init__(self, windowTitle, tankNumber: TankNumber):
         super().__init__()
-        self.setWindowTitle(windowTitle)
-        self.grid = QGridLayout()
-        self.grid.setSpacing(3)
-        self.rowNum = 0
-        self.tankNumber = tankNumber
         self.tankValues = di.Container.tankValues()
         self.comm = di.Container.comm()
-        self.setStyleSheet("background: gray")
+        mousePos = di.Container.mousePos()
+        self.tankNumber = tankNumber
+        self.rowNum = 0
+
+        self.grid = QGridLayout()
+        self.grid.setSpacing(3)
+
         self.addRow(self.getHeader())
         if tankNumber == TankNumber.CHB:
             self.step1Stroke = SeqStroke(1, "Подготовка", "Нет", startDesc="Уровень ниже S5",
@@ -100,11 +99,11 @@ class SeqWindow(QWidget, Updater):
             self.step2Stroke = SeqStroke(2, "Заполнение M7", "Открыть D4",
                                          endDesc="По таймеру", timerEN=True, timerVarName="chbs2per")
             self.step3Stroke = SeqStroke(3, "Наполнение чистой бочки", "Старт M7",
-                                         lockDesc="Уровень выше S4", endDesc="Бочка отстойника опорожнена или очередь пуста")
+                                         lockDesc="Уровень выше S4 или ручной режим", endDesc="Бочка отстойника опорожнена или очередь пуста")
             self.addRow(self.step1Stroke)
             self.addRow(self.step2Stroke)
             self.addRow(self.step3Stroke)
-            self.setFixedSize(850, 230)
+            self.setFixedSize(85 * getGeometryStep(), 23 * getGeometryStep())
         else:
             self.step1Stroke = SeqStroke(1, "Подготовка", "Нет",
                                          endDesc=f"Уровень ниже H{tankNumber.value}")
@@ -120,7 +119,8 @@ class SeqWindow(QWidget, Updater):
             self.step5Stroke = SeqStroke(5, "Выдержка", "Нет",
                                          endDesc="По таймеру", timerEN=True, timerVarName=f"ob{tankNumber.value}s5per")
             self.step6Stroke = SeqStroke(6, "Опорожнение", f"Открыть O{tankNumber.value}",
-                                         startDesc="Разрешение от чистой бочки", lockDesc="Уровень выше S4",
+                                         startDesc="Разрешение от чистой бочки",
+                                         lockDesc="Уровень выше S4 или ручной режим",
                                          endDesc=f"Уровень ниже H{tankNumber.value}")
             self.addRow(self.step1Stroke)
             self.addRow(self.step2Stroke)
@@ -128,18 +128,20 @@ class SeqWindow(QWidget, Updater):
             self.addRow(self.step4Stroke)
             self.addRow(self.step5Stroke)
             self.addRow(self.step6Stroke)
-            self.setFixedSize(850, 330)
+            self.setFixedSize(85 * getGeometryStep(), 33 * getGeometryStep())
 
         self.resetButton = SButton("Сброс последовательности", color="white", background="red")
         self.nextButton = SButton("Пропустить шаг", color="black", background="yellow")
-        self.resetButton.clicked.connect(self.resetSeq)
-        self.nextButton.clicked.connect(self.nextStep)
         self.grid.addWidget(self.resetButton, self.rowNum, 0, 1, 3)
         self.grid.addWidget(self.nextButton, self.rowNum, 3, 1, 2)
 
+        self.resetButton.clicked.connect(self.resetSeq)
+        self.nextButton.clicked.connect(self.nextStep)
+
+        self.setWindowTitle(windowTitle)
+        self.setStyleSheet("background: gray")
         self.setLayout(self.grid)
         self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
-        mousePos = di.Container.mousePos()
         self.move(mousePos.getGlobalPos().x() - int(self.geometry().width() / 2),
                   mousePos.getGlobalPos().y() - self.geometry().height() - 50)
         self.startUpdate()
@@ -181,8 +183,13 @@ class SeqWindow(QWidget, Updater):
                               self.tankValues.get(self.tankNumber, "s5Per"))
             self.updateStroke(self.step6Stroke, self.tankValues.get(self.tankNumber, "step"),
                               self.tankValues.get(self.tankNumber, "s6St"))
-        self.resetButton.setEnabled(self.tankValues.get(self.tankNumber, "auto"))
-        self.nextButton.setEnabled(self.tankValues.get(self.tankNumber, "auto"))
+
+        auto = self.tankValues.get(self.tankNumber, "auto")
+        self.resetButton.setEnabled(auto)
+        self.resetButton.setBackground(resetSeqButtonColors[auto])
+        self.nextButton.setEnabled(auto)
+        self.nextButton.setBackground(nextStepButtonColors[auto])
+
 
     @staticmethod
     def updateStroke(stroke: SeqStroke, step, status, timeRemain=None, period=None):
@@ -194,6 +201,10 @@ class SeqWindow(QWidget, Updater):
 
     def closeEvent(self, event):
         self.stopUpdate()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape.value:
+            self.close()
 
     def addRow(self, widgetList):
         for index, widget in enumerate(widgetList):

@@ -1,11 +1,11 @@
-from PyQt6.QtCore import QPoint
+from PyQt6.QtCore import QPoint, Qt
 from PyQt6.QtWidgets import QMainWindow, QApplication
 
 from panels.control_panel import ControlPanel
 from panels.item import Item
 from misc import di
 from panels.sensor_mon import SensorMon
-from misc.own_types import ObjectType, RotateDir
+from misc.own_types import ObjectType, RotateDir, TankNumber
 
 
 class MainWindow(QMainWindow):
@@ -43,21 +43,21 @@ class MainWindow(QMainWindow):
         self.setMouseTracking(True)
 
     def init(self):
-        self.M1 = Item("M1", ObjectType.PUMP, QPoint(265, 185), RotateDir.LEFT)
-        self.M2 = Item("M2", ObjectType.PUMP, QPoint(495, 187), RotateDir.LEFT)
-        self.M3 = Item("M3", ObjectType.PUMP, QPoint(723, 187), RotateDir.LEFT)
-        self.M7 = Item("M6", ObjectType.PUMP, QPoint(921, 743), RotateDir.LEFT)
-        self.M7 = Item("M7", ObjectType.PUMP, QPoint(804, 542), RotateDir.RIGHT)
-        self.C1 = Item("C1", ObjectType.VALVE, QPoint(185, 90), RotateDir.DOWN)
-        self.C2 = Item("C2", ObjectType.VALVE, QPoint(410, 90), RotateDir.DOWN)
-        self.C3 = Item("C3", ObjectType.VALVE, QPoint(639, 90), RotateDir.DOWN)
-        self.D1 = Item("D1", ObjectType.VALVE, QPoint(106, 390), RotateDir.DOWN)
-        self.D2 = Item("D2", ObjectType.VALVE, QPoint(336, 390), RotateDir.DOWN)
-        self.D3 = Item("D3", ObjectType.VALVE, QPoint(563, 390), RotateDir.DOWN)
-        self.D4 = Item("D4", ObjectType.VALVE, QPoint(680, 580), RotateDir.LEFT)
-        self.O1 = Item("O1", ObjectType.VALVE, QPoint(276, 465), RotateDir.DOWN)
-        self.O2 = Item("O2", ObjectType.VALVE, QPoint(502, 465), RotateDir.DOWN)
-        self.O3 = Item("O3", ObjectType.VALVE, QPoint(730, 465), RotateDir.DOWN)
+        self.M1 = Item("M1", ObjectType.PUMP, QPoint(265, 185), RotateDir.LEFT, TankNumber.OB1)
+        self.M2 = Item("M2", ObjectType.PUMP, QPoint(495, 187), RotateDir.LEFT, TankNumber.OB2)
+        self.M3 = Item("M3", ObjectType.PUMP, QPoint(723, 187), RotateDir.LEFT, TankNumber.OB3)
+        self.M7 = Item("M6", ObjectType.PUMP, QPoint(921, 743), RotateDir.LEFT, TankNumber.CHB)
+        self.M7 = Item("M7", ObjectType.PUMP, QPoint(804, 542), RotateDir.RIGHT, TankNumber.CHB)
+        self.C1 = Item("C1", ObjectType.VALVE, QPoint(185, 90), RotateDir.DOWN, TankNumber.OB1)
+        self.C2 = Item("C2", ObjectType.VALVE, QPoint(410, 90), RotateDir.DOWN, TankNumber.OB2)
+        self.C3 = Item("C3", ObjectType.VALVE, QPoint(639, 90), RotateDir.DOWN, TankNumber.OB3)
+        self.D1 = Item("D1", ObjectType.VALVE, QPoint(106, 390), RotateDir.DOWN, TankNumber.OB1)
+        self.D2 = Item("D2", ObjectType.VALVE, QPoint(336, 390), RotateDir.DOWN, TankNumber.OB2)
+        self.D3 = Item("D3", ObjectType.VALVE, QPoint(563, 390), RotateDir.DOWN, TankNumber.OB3)
+        self.D4 = Item("D4", ObjectType.VALVE, QPoint(680, 580), RotateDir.LEFT, TankNumber.CHB)
+        self.O1 = Item("O1", ObjectType.VALVE, QPoint(276, 465), RotateDir.DOWN, TankNumber.OB1)
+        self.O2 = Item("O2", ObjectType.VALVE, QPoint(502, 465), RotateDir.DOWN, TankNumber.OB2)
+        self.O3 = Item("O3", ObjectType.VALVE, QPoint(730, 465), RotateDir.DOWN, TankNumber.OB3)
         self.B1 = SensorMon("B1", QPoint(228, 240))
         self.H1 = SensorMon("H1", QPoint(228, 285))
         self.B2 = SensorMon("B2", QPoint(455, 239))
@@ -74,7 +74,13 @@ class MainWindow(QMainWindow):
     def mouseMoveEvent(self, event):
         self.mousePos.updatePos(event.pos().x(), event.pos().y())
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape.value:
+            for window in QApplication.topLevelWidgets():
+                if window == self:
+                    continue
+                window.close()
+
     def closeEvent(self, event):
         di.Container.comm().disconnect()
         QApplication.closeAllWindows()
-

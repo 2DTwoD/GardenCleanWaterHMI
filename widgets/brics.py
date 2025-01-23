@@ -1,4 +1,3 @@
-from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QIntValidator
 from PyQt6.QtWidgets import QLabel, QPushButton, QComboBox, QLineEdit
 
@@ -30,6 +29,10 @@ class SLabel(QLabel):
 
     def setBackground(self, newColor):
         self.background = newColor
+        self.updateColor()
+
+    def setColor(self, newColor):
+        self.color = newColor
         self.updateColor()
 
     def updateColor(self):

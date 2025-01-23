@@ -1,27 +1,24 @@
-from PyQt6.QtWidgets import QWidget, QGridLayout
+from PyQt6.QtWidgets import QWidget, QGridLayout, QApplication
 
 from misc import di
-from misc.own_types import TankNumber, Align
+from misc.own_types import TankNumber, Align, getGeometryStep
 from misc.updater import Updater
 from widgets.brics import SLabel, SButton, SCombo
 from panels.seq_window import SeqWindow
 
-
-class TankLabelList(list):
-    def __init__(self):
-        super().__init__()
-        self.extend(["Бак чистой воды", "Бак отстойник 1", "Бак отстойник 2", "Бак отстойник 3"])
-
+tankLabelList = ["Бак чистой воды", "Бак отстойник 1", "Бак отстойник 2", "Бак отстойник 3"]
+autoButtonColors = ["lightgray", "#00FF00", "yellow"]
+comStatusColorList = ["red", "green"]
 
 class TankStroke(list):
     def __init__(self, tankNumber: TankNumber):
         super().__init__()
-        self.seqWindow = None
-        self.tankNumber = tankNumber
-        self.tankLabelList = di.TankLabelList()
-        self.comm = di.Container.comm()
 
-        self.label = SLabel(self.tankLabelList[tankNumber.value], transparent=True, color="gray", align=Align.VCENTER)
+        self.comm = di.Container.comm()
+        self.tankNumber = tankNumber
+        self.seqWindow = None
+
+        self.label = SLabel(tankLabelList[tankNumber.value], transparent=True, color="gray", align=Align.VCENTER)
         self.stepLabel = SLabel("Шаг Х", transparent=True, align=Align.VCENTER)
         self.seqButton = SButton("Шаги")
         self.autoButton = SButton("Автомат")
@@ -40,19 +37,19 @@ class TankStroke(list):
     def clickOnButton(self):
         if self.seqWindow is not None:
             self.seqWindow.close()
-        self.seqWindow = SeqWindow(self.tankLabelList[self.tankNumber.value], self.tankNumber)
+        self.seqWindow = SeqWindow(tankLabelList[self.tankNumber.value], self.tankNumber)
         self.seqWindow.show()
 
     def setStepVis(self, curStep):
         self.stepLabel.setText(f"Шаг {curStep}")
 
     def setAutoVis(self, auto):
-        autoColor = "lightgray"
-        manColor = "lightgray"
+        autoColor = autoButtonColors[0]
+        manColor = autoButtonColors[0]
         if auto > 0:
-            autoColor = "#00FF00"
+            autoColor = autoButtonColors[1]
         else:
-            manColor = "yellow"
+            manColor = autoButtonColors[2]
         self.autoButton.setBackground(autoColor)
         self.manButton.setBackground(manColor)
 
@@ -66,16 +63,17 @@ class TankStroke(list):
 class ComStroke(list):
     def __init__(self):
         super().__init__()
-        self.statusList = ["X", "V"]
-        self.statusColorList = ["red", "green"]
+
         self.comm = di.Container.comm()
+        ports = self.comm.getAvailablePorts()
+        ports.sort()
+
         self.connectLabel = SLabel("Выбор COM-порта:", color="gray", transparent=True)
         self.connectCombo = SCombo()
-
-        self.connectCombo.addItems(self.comm.getAvailablePorts())
+        self.connectCombo.addItems(ports)
         self.connectButton = SButton("Подключиться")
         self.disconnectButton = SButton("Отключиться")
-        self.statusLabel = SLabel(self.statusList[0], color="white", background="red", align=Align.CENTER, bold=True)
+        self.statusLabel = SLabel("X", color="white", background="red", align=Align.CENTER, bold=True)
 
         self.append(self.connectLabel)
         self.append(self.connectCombo)
@@ -93,25 +91,35 @@ class ComStroke(list):
         self.comm.disconnect()
 
     def setStatus(self, ok: bool, label: str):
-        self.statusLabel.setBackground(self.statusColorList[ok])
+        self.statusLabel.setBackground(comStatusColorList[ok])
         self.statusLabel.setText(label)
 
     def setSelectable(self, value):
         self.connectCombo.setEnabled(value)
+
+    def updateAvailablePorts(self):
+        if self.comm.connected():
+            return
+        ports = self.comm.getAvailablePorts()
+        ports.sort()
+        allItems = [self.connectCombo.itemText(i) for i in range(self.connectCombo.count())]
+        if ports == allItems:
+            return
+        self.connectCombo.clear()
+        self.connectCombo.addItems(ports)
 
 
 class ControlPanel(QWidget, Updater):
     def __init__(self):
         super().__init__()
 
-        self.grid = QGridLayout()
-        self.grid.setSpacing(3)
-        self.rowNum = 0
         self.tankValues = di.Container.tankValues()
         self.comm = di.Container.comm()
+        self.rowNum = 0
 
-        self.setParent(di.Container.mainWindow())
-        self.setGeometry(175, 600, 650, 200)
+        self.grid = QGridLayout()
+        self.grid.setSpacing(3)
+
         self.chbSeqPanel = TankStroke(TankNumber.CHB)
         self.ob1SeqPanel = TankStroke(TankNumber.OB1)
         self.ob2SeqPanel = TankStroke(TankNumber.OB2)
@@ -131,6 +139,9 @@ class ControlPanel(QWidget, Updater):
 
         self.setStyleSheet("background: lightgray")
         self.setLayout(self.grid)
+        self.setParent(di.Container.mainWindow())
+        self.setGeometry(int(17.5 * getGeometryStep()), 60 * getGeometryStep(),
+                         65 * getGeometryStep(), 20 * getGeometryStep())
         self.setMouseTracking(True)
         self.startUpdate()
 
@@ -151,6 +162,8 @@ class ControlPanel(QWidget, Updater):
         self.tankQueue.setText(self.getQueueLabelText(self.tankValues.get(TankNumber.CHB, "queue")))
         self.comStroke.setStatus(self.comm.connected(), self.comm.getStatus())
         self.comStroke.setSelectable(self.comm.disconnected())
+        self.comStroke.updateAvailablePorts()
+
 
     @staticmethod
     def drawStepAuto(tankStroke: TankStroke, step, auto):

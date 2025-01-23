@@ -14,22 +14,22 @@ from misc.own_types import TankNumber, CommStatus
 class Comm:
     def __init__(self):
         super().__init__()
-        self.thread: threading.Thread = None
-        self.port: serial.Serial = None
-        self.baudrate = 19200
+        self.thread = None
+        self.port = None
         self.cycleCommands = ["[get.periph]", "[get.chb]", "[get.ob1]", "[get.ob2]", "[get.ob3]"]
         self.cycleUpdatesValues = [di.Container.periphValues(),
                                    di.Container.tankValues().select(TankNumber.CHB),
                                    di.Container.tankValues().select(TankNumber.OB1),
                                    di.Container.tankValues().select(TankNumber.OB2),
                                    di.Container.tankValues().select(TankNumber.OB3)]
+        self.baudrate = 19200
         self.cycleIndex = 0
         self.errorCounter = 0
         self.sendCommand = []
         self.start = False
         self.status = CommStatus.DISCONNECT
         self.bufferSize = 256
-        self.sendPeriod = 0.01
+        self.sendPeriod = 0.05
         self.readTimeOut = 0.5
 
         self.maxCountForErrorVis = 20
@@ -104,7 +104,8 @@ class Comm:
         except:
             return True, None
 
-    def getAvailablePorts(self):
+    @staticmethod
+    def getAvailablePorts():
         result = []
         ports = serial.tools.list_ports.comports()
         for port in ports:
