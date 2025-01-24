@@ -29,7 +29,7 @@ class Comm:
         self.start = False
         self.status = CommStatus.DISCONNECT
         self.bufferSize = 256
-        self.sendPeriod = 0.05
+        self.sendPeriod = 0.1
         self.readTimeOut = 0.5
 
         self.maxCountForErrorVis = 20

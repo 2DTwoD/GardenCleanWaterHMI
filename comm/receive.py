@@ -58,7 +58,7 @@ class PeriphValues(CommonDict):
 class OBvalues(CommonDict):
     def __init__(self):
         super().__init__()
-        self.__setitem__("step", 0)
+        self.__setitem__("step", 1)
         self.__setitem__("auto", 0)
         self.__setitem__("s1St", 0)
         self.__setitem__("s2St", 0)
@@ -79,7 +79,7 @@ class OBvalues(CommonDict):
 class CHBvalues(CommonDict):
     def __init__(self):
         super().__init__()
-        self.__setitem__("step", 0)
+        self.__setitem__("step", 1)
         self.__setitem__("auto", 0)
         self.__setitem__("s1St", 0)
         self.__setitem__("s2St", 0)

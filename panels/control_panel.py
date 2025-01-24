@@ -8,7 +8,9 @@ from panels.seq_window import SeqWindow
 
 tankLabelList = ["Бак чистой воды", "Бак отстойник 1", "Бак отстойник 2", "Бак отстойник 3"]
 autoButtonColors = ["lightgray", "#00FF00", "yellow"]
-comStatusColorList = ["red", "green"]
+comStatusColorList = ["red", "#00FF00"]
+obStepDescList = ["Подготовка", "Слив", "Промывка", "Заполнение", "Выдержка", "Опорожн."]
+chbStepDescList = ["Подготовка", "Заполн. М7", "Наполнение"]
 
 class TankStroke(list):
     def __init__(self, tankNumber: TankNumber):
@@ -20,15 +22,15 @@ class TankStroke(list):
 
         self.label = SLabel(tankLabelList[tankNumber.value], transparent=True, color="gray", align=Align.VCENTER)
         self.stepLabel = SLabel("Шаг Х", transparent=True, align=Align.VCENTER)
-        self.seqButton = SButton("Шаги")
         self.autoButton = SButton("Автомат")
         self.manButton = SButton("Ручной")
+        self.seqButton = SButton("Шаги")
 
         self.append(self.label)
         self.append(self.stepLabel)
-        self.append(self.seqButton)
         self.append(self.autoButton)
         self.append(self.manButton)
+        self.append(self.seqButton)
 
         self.seqButton.clicked.connect(self.clickOnButton)
         self.autoButton.clicked.connect(lambda: self.autoManButton(1))
@@ -41,7 +43,10 @@ class TankStroke(list):
         self.seqWindow.show()
 
     def setStepVis(self, curStep):
-        self.stepLabel.setText(f"Шаг {curStep}")
+        if self.tankNumber == TankNumber.CHB:
+            self.stepLabel.setText(f"Шаг {curStep}({chbStepDescList[curStep - 1]})")
+        else:
+            self.stepLabel.setText(f"Шаг {curStep}({obStepDescList[curStep - 1]})")
 
     def setAutoVis(self, auto):
         autoColor = autoButtonColors[0]
@@ -59,6 +64,48 @@ class TankStroke(list):
         else:
             self.comm.send(f"[set.ob{self.tankNumber.value}auto.{value}]")
 
+
+class MiscStroke(list):
+    def __init__(self):
+        super().__init__()
+
+        self.comm = di.Container.comm()
+        self.tankValues = di.Container.tankValues()
+
+        self.queueLabel = SLabel("Очередь опорожнения:", transparent=True, align=Align.VCENTER, color="gray")
+        self.tankQueue = SLabel("Очередь пуста", size=12, transparent=True, align=Align.VCENTER)
+        self.autoAllButton = SButton("Всё в автомат", background="#00FF00")
+        self.manAllButton = SButton("Всё в ручной", background="yellow")
+        self.stopAllButton = SButton("Остановить всё", background="red", color="white")
+
+        self.append(self.queueLabel)
+        self.append(self.tankQueue)
+        self.append(self.autoAllButton)
+        self.append(self.manAllButton)
+        self.append(self.stopAllButton)
+
+        self.autoAllButton.clicked.connect(lambda: self.autoManAll(1))
+        self.manAllButton.clicked.connect(lambda: self.autoManAll(0))
+        self.stopAllButton.clicked.connect(self.stopAll)
+
+    def autoManAll(self, value):
+        self.comm.send(f"[set.allauto.{value}]")
+
+    def stopAll(self):
+        self.comm.send(f"[set.all.0]")
+
+    def updateQueue(self, text):
+        self.tankQueue.setText(self.getQueueLabelText(text))
+
+    @staticmethod
+    def getQueueLabelText(rawQueue: str):
+        result = ""
+        for c in rawQueue:
+            if c != "0":
+                result += c + "-->"
+        if not result:
+            return "Очередь пуста"
+        return result[:-3]
 
 class ComStroke(list):
     def __init__(self):
@@ -124,17 +171,14 @@ class ControlPanel(QWidget, Updater):
         self.ob1SeqPanel = TankStroke(TankNumber.OB1)
         self.ob2SeqPanel = TankStroke(TankNumber.OB2)
         self.ob3SeqPanel = TankStroke(TankNumber.OB3)
+        self.miscStroke = MiscStroke()
         self.comStroke = ComStroke()
-        self.queueLabel = SLabel("Очередь опорожнения:", transparent=True, align=Align.VCENTER, color="gray")
-        self.tankQueue = SLabel("X-->X-->X", size=12, transparent=True, align=Align.VCENTER)
 
         self.addRow(self.ob1SeqPanel)
         self.addRow(self.ob2SeqPanel)
         self.addRow(self.ob3SeqPanel)
         self.addRow(self.chbSeqPanel)
-        self.grid.addWidget(self.queueLabel, self.rowNum, 0, 1, 1)
-        self.grid.addWidget(self.tankQueue, self.rowNum, 1, 1, 1)
-        self.rowNum += 1
+        self.addRow(self.miscStroke)
         self.addRow(self.comStroke)
 
         self.setStyleSheet("background: lightgray")
@@ -159,7 +203,7 @@ class ControlPanel(QWidget, Updater):
                           self.tankValues.get(TankNumber.OB2, "auto"))
         self.drawStepAuto(self.ob3SeqPanel, self.tankValues.get(TankNumber.OB3, "step"),
                           self.tankValues.get(TankNumber.OB3, "auto"))
-        self.tankQueue.setText(self.getQueueLabelText(self.tankValues.get(TankNumber.CHB, "queue")))
+        self.miscStroke.updateQueue(self.tankValues.get(TankNumber.CHB, "queue"))
         self.comStroke.setStatus(self.comm.connected(), self.comm.getStatus())
         self.comStroke.setSelectable(self.comm.disconnected())
         self.comStroke.updateAvailablePorts()
@@ -170,12 +214,3 @@ class ControlPanel(QWidget, Updater):
         tankStroke.setStepVis(step)
         tankStroke.setAutoVis(auto)
 
-    @staticmethod
-    def getQueueLabelText(rawQueue: str):
-        result = ""
-        for c in rawQueue:
-            if c != "0":
-                result += c + "-->"
-        if not result:
-            return "Очередь пуста"
-        return result[:-3]
