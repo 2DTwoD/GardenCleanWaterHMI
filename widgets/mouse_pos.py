@@ -6,8 +6,11 @@ from misc.own_types import getGeometryStep
 
 
 class MousePos(QWidget):
-    def __init__(self):
-        super().__init__(parent=di.Container.mainWindow())
+    def __init__(self, enable=False):
+        super().__init__()
+
+        if enable:
+            self.setParent(di.Container.mainWindow())
 
         self.pos = QPoint(0, 0)
         self.globPos = QPoint(0, 0)

@@ -1,4 +1,5 @@
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QWidget, QGridLayout
 
 from misc import di
@@ -112,7 +113,7 @@ class SeqWindow(QWidget, Updater):
             self.step3Stroke = SeqStroke(3, "Промывка",
                                          f"Открыть C{tankNumber.value}, D{tankNumber.value}",
                                          endDesc="По таймеру", timerEN=True, timerVarName=f"ob{tankNumber.value}s3per")
-            self.step4Stroke = SeqStroke(4, "Заполнение",
+            self.step4Stroke = SeqStroke(4, "Наполнение",
                                          f"Открыть C{tankNumber.value}, старт M{tankNumber.value} по таймеру",
                                          endDesc=f"Уровень выше В{tankNumber.value}", timerEN=True,
                                          timerVarName=f"ob{tankNumber.value}s4per")
@@ -145,6 +146,7 @@ class SeqWindow(QWidget, Updater):
         self.move(mousePos.getGlobalPos().x() - int(self.geometry().width() / 2),
                   mousePos.getGlobalPos().y() - self.geometry().height() - 50)
         self.startUpdate()
+        self.setWindowIcon(QIcon('pics/icons/tank.png'))
 
     def resetSeq(self):
         if self.tankNumber == TankNumber.CHB:

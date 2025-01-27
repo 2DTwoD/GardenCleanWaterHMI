@@ -1,4 +1,5 @@
 from PyQt6.QtCore import QPoint, Qt
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QMainWindow, QApplication
 
 from panels.control_panel import ControlPanel
@@ -36,13 +37,14 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Очистка воды HMI")
-        self.setFixedSize(1200, 800)
+        self.setFixedSize(1200, 820)
         self.setStyleSheet("background: white; background-image: url(pics/back.png)")
         self.mousePos = None
         self.controlPanel = None
         self.setMouseTracking(True)
+        self.setWindowIcon(QIcon('pics/icons/main.png'))
 
-    def init(self):
+    def init(self, enableMousePosVis=False):
         self.M1 = Item("M1", ObjectType.PUMP, QPoint(265, 185), RotateDir.LEFT, TankNumber.OB1)
         self.M2 = Item("M2", ObjectType.PUMP, QPoint(495, 187), RotateDir.LEFT, TankNumber.OB2)
         self.M3 = Item("M3", ObjectType.PUMP, QPoint(723, 187), RotateDir.LEFT, TankNumber.OB3)
@@ -67,7 +69,7 @@ class MainWindow(QMainWindow):
         self.S4 = SensorMon("S4", QPoint(930, 585))
         self.S5 = SensorMon("S5", QPoint(930, 620))
         self.S6 = SensorMon("S6", QPoint(930, 655))
-        self.mousePos = di.Container.mousePos()
+        self.mousePos = di.Container.mousePos(enableMousePosVis)
         self.controlPanel = ControlPanel()
         self.show()
 

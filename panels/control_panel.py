@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QGridLayout, QApplication
+from PyQt6.QtWidgets import QWidget, QGridLayout
 
 from misc import di
 from misc.own_types import TankNumber, Align, getGeometryStep
@@ -8,8 +8,8 @@ from panels.seq_window import SeqWindow
 
 tankLabelList = ["Бак чистой воды", "Бак отстойник 1", "Бак отстойник 2", "Бак отстойник 3"]
 autoButtonColors = ["lightgray", "#00FF00", "yellow"]
-comStatusColorList = ["red", "#00FF00"]
-obStepDescList = ["Подготовка", "Слив", "Промывка", "Заполнение", "Выдержка", "Опорожн."]
+comStatusColorList = ["red", "green"]
+obStepDescList = ["Подготовка", "Слив", "Промывка", "Наполнение", "Выдержка", "Опорожн."]
 chbStepDescList = ["Подготовка", "Заполн. М7", "Наполнение"]
 
 class TankStroke(list):
@@ -20,7 +20,8 @@ class TankStroke(list):
         self.tankNumber = tankNumber
         self.seqWindow = None
 
-        self.label = SLabel(tankLabelList[tankNumber.value], transparent=True, color="gray", align=Align.VCENTER)
+        self.label = SLabel(tankLabelList[tankNumber.value], transparent=True, color="gray",
+                            align=Align.VCENTER, bold=True)
         self.stepLabel = SLabel("Шаг Х", transparent=True, align=Align.VCENTER)
         self.autoButton = SButton("Автомат")
         self.manButton = SButton("Ручной")
@@ -72,10 +73,11 @@ class MiscStroke(list):
         self.comm = di.Container.comm()
         self.tankValues = di.Container.tankValues()
 
-        self.queueLabel = SLabel("Очередь опорожнения:", transparent=True, align=Align.VCENTER, color="gray")
+        self.queueLabel = SLabel("Очередь опорожнения:", transparent=True, align=Align.VCENTER,
+                                 color="gray", bold=True)
         self.tankQueue = SLabel("Очередь пуста", size=12, transparent=True, align=Align.VCENTER)
-        self.autoAllButton = SButton("Всё в автомат", background="#00FF00")
-        self.manAllButton = SButton("Всё в ручной", background="yellow")
+        self.autoAllButton = SButton("Всё в автомат", background="green", color="white")
+        self.manAllButton = SButton("Всё в ручной", background="orange")
         self.stopAllButton = SButton("Остановить всё", background="red", color="white")
 
         self.append(self.queueLabel)
@@ -115,7 +117,7 @@ class ComStroke(list):
         ports = self.comm.getAvailablePorts()
         ports.sort()
 
-        self.connectLabel = SLabel("Выбор COM-порта:", color="gray", transparent=True)
+        self.connectLabel = SLabel("Выбор COM-порта:", color="gray", transparent=True, bold=True)
         self.connectCombo = SCombo()
         self.connectCombo.addItems(ports)
         self.connectButton = SButton("Подключиться")

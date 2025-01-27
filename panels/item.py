@@ -1,11 +1,12 @@
 from PyQt6.QtCore import Qt, QPoint
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QWidget, QGridLayout
 
 from misc import di
 from misc.updater import Updater
 from widgets.brics import SButton, SLabel
 from widgets.pic_object import PicObject
-from misc.own_types import ObjectType, RotateDir, getGeometryStep, TankNumber, Align
+from misc.own_types import ObjectType, RotateDir, getGeometryStep, TankNumber
 
 autoList = ["Р", "А"]
 autoColorList = ["orange", "#00FF00"]
@@ -31,9 +32,12 @@ class ControlWindow(QWidget, Updater):
         self.labelText = labelText
         self.tankNumber = tankNumber
 
-        self.buttonTextList = ["Старт " + labelText, "Стоп " + labelText]
         if objectType == ObjectType.VALVE:
             self.buttonTextList = ["Открыть " + labelText, "Закрыть " + labelText]
+            self.setWindowIcon(QIcon('pics/icons/valve.png'))
+        else:
+            self.buttonTextList = ["Старт " + labelText, "Стоп " + labelText]
+            self.setWindowIcon(QIcon('pics/icons/pump.png'))
 
         self.setWindowTitle(labelText)
         self.setGeometry(mousePos.getGlobalPos().x(), mousePos.getGlobalPos().y(),
