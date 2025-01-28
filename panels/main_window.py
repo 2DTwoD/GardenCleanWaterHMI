@@ -1,5 +1,3 @@
-from sysconfig import get_path
-
 from PyQt6.QtCore import QPoint, Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QMainWindow, QApplication
