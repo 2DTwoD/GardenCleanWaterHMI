@@ -99,7 +99,7 @@ class MiscStroke(list):
         self.comm.send(f"[set.allauto.{value}]")
 
     def stopAll(self):
-        if Confirm("Остановить всё, что в ручном управлении?").cancel():
+        if Confirm("Остановить всё, что в ручном режиме?").cancel():
             return
         self.comm.send(f"[set.all.0]")
 
