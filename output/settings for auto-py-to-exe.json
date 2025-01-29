@@ -76,10 +76,6 @@
   {
    "optionDest": "hiddenimports",
    "value": "dependency_injector.wiring"
-  },
-  {
-   "optionDest": "datas",
-   "value": "D:/GitProjects/GardenCleanWaterHMI/pics;pics/"
   }
  ],
  "nonPyinstallerOptions": {

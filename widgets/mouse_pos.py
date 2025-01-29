@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QPoint
-from PyQt6.QtWidgets import QWidget, QLabel
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout
 
 from misc import di
 from misc.own_types import getGeometryStep
@@ -9,16 +9,20 @@ class MousePos(QWidget):
     def __init__(self, enable=False):
         super().__init__()
 
-        if enable:
-            self.setParent(di.Container.mainWindow())
+        self.setParent(di.Container.mainWindow())
 
         self.pos = QPoint(0, 0)
         self.globPos = QPoint(0, 0)
 
-        self.xPosLabel = QLabel("0", parent=self)
-        self.xPosLabel.setGeometry(0, 0, getGeometryStep() * 10, getGeometryStep() * 2)
-        self.yPosLabel = QLabel("0", parent=self)
-        self.yPosLabel.setGeometry(0, self.xPosLabel.height(), getGeometryStep() * 10, getGeometryStep() * 2)
+        self.box = QVBoxLayout()
+        self.xPosLabel = QLabel("0")
+        self.xPosLabel.setFixedSize(getGeometryStep() * 10, getGeometryStep() * 3)
+        self.yPosLabel = QLabel("0")
+        self.yPosLabel.setFixedSize(getGeometryStep() * 10, getGeometryStep() * 3)
+        self.box.addWidget(self.xPosLabel)
+        self.box.addWidget(self.yPosLabel)
+        if enable:
+            self.setLayout(self.box)
 
         self.setMouseTracking(True)
         self.xPosLabel.setMouseTracking(True)

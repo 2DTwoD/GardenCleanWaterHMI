@@ -40,8 +40,8 @@ class ControlWindow(QWidget, Updater):
             self.setWindowIcon(QIcon('pics/icons/pump.png'))
 
         self.setWindowTitle(labelText)
-        self.setGeometry(mousePos.getGlobalPos().x(), mousePos.getGlobalPos().y(),
-                         20 * getGeometryStep(), 11 * getGeometryStep())
+        self.move(mousePos.getGlobalPos().x(), mousePos.getGlobalPos().y())
+        self.setFixedSize(20 * getGeometryStep(), 14 * getGeometryStep())
 
         self.picObject = PicObject(objectType=objectType)
         self.autoIcon = AutoIcon(tankNumber)
