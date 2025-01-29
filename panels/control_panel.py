@@ -5,10 +5,12 @@ from misc.own_types import TankNumber, Align, getGeometryStep
 from misc.updater import Updater
 from widgets.brics import SLabel, SButton, SCombo
 from panels.seq_window import SeqWindow
+from widgets.dialog import Confirm
 
 tankLabelList = ["Бак чистой воды", "Бак отстойник 1", "Бак отстойник 2", "Бак отстойник 3"]
 autoButtonColors = ["lightgray", "#00FF00", "yellow"]
 comStatusColorList = ["red", "green"]
+comButtonColorList = ["gray", "lightgray"]
 obStepDescList = ["Подготовка", "Слив", "Промывка", "Наполнение", "Выдержка", "Опорожн."]
 chbStepDescList = ["Подготовка", "Заполн. М7", "Наполнение"]
 
@@ -91,9 +93,14 @@ class MiscStroke(list):
         self.stopAllButton.clicked.connect(self.stopAll)
 
     def autoManAll(self, value):
+        message = "Перевести всё в автомат?" if value > 0 else "Перевести всё в ручной режим?"
+        if Confirm(message).cancel():
+            return
         self.comm.send(f"[set.allauto.{value}]")
 
     def stopAll(self):
+        if Confirm("Остановить всё, что в ручном управлении?").cancel():
+            return
         self.comm.send(f"[set.all.0]")
 
     def updateQueue(self, text):
@@ -137,11 +144,15 @@ class ComStroke(list):
         self.comm.connect(self.connectCombo.currentText())
 
     def disconnect(self):
+        if self.comm.connected() and Confirm("Отключиться от МК?").cancel():
+            return
         self.comm.disconnect()
 
     def setStatus(self, ok: bool, label: str):
         self.statusLabel.setBackground(comStatusColorList[ok])
         self.statusLabel.setText(label)
+        self.connectButton.setBackground(comButtonColorList[self.comm.disconnected()])
+        self.disconnectButton.setBackground(comButtonColorList[self.comm.connected()])
 
     def setSelectable(self, value):
         self.connectCombo.setEnabled(value)

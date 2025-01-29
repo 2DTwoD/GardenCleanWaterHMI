@@ -6,6 +6,7 @@ from misc import di
 from misc.own_types import TankNumber, Align, getGeometryStep
 from misc.updater import Updater
 from widgets.brics import SLabel, SButton, SField
+from widgets.dialog import Confirm
 
 statusList = ["Ожидание", "Активен", "Заблокир.", "Завершен", "Не определён"]
 statusColorList = ["lightgray", "lightblue", "yellow", "lightgreen", "red"]
@@ -73,8 +74,11 @@ class SeqStroke(list):
         return f"{hours:02}:{minutes:02}:{seconds:02}"
 
     def applyButonClicked(self):
+        value = self.editPeriodLine.text()
+        if Confirm(f"Применить значение {value}?").cancel():
+            return
         try:
-            value = int(self.editPeriodLine.text())
+            value = int(value)
         except:
             print("Неправильный ввод")
             return
@@ -149,12 +153,16 @@ class SeqWindow(QWidget, Updater):
         self.setWindowIcon(QIcon('pics/icons/tank.png'))
 
     def resetSeq(self):
+        if Confirm("Сбросить последовательность?").cancel():
+            return
         if self.tankNumber == TankNumber.CHB:
             self.comm.send("[set.chbagain]")
         else:
             self.comm.send(f"[set.ob{self.tankNumber.value}again]")
 
     def nextStep(self):
+        if Confirm("Пропустить шаг?").cancel():
+            return
         if self.tankNumber == TankNumber.CHB:
             self.comm.send("[set.chbnext.1]")
         else:

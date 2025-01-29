@@ -1,12 +1,13 @@
 from PyQt6.QtCore import QPoint, Qt
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QMainWindow, QApplication
+from PyQt6.QtWidgets import QMainWindow, QApplication, QMessageBox
 
 from panels.control_panel import ControlPanel
 from panels.item import Item
 from misc import di
 from panels.sensor_mon import SensorMon
 from misc.own_types import ObjectType, RotateDir, TankNumber
+from widgets.dialog import Confirm
 
 
 class MainWindow(QMainWindow):
@@ -84,5 +85,10 @@ class MainWindow(QMainWindow):
                 window.close()
 
     def closeEvent(self, event):
+        if Confirm("Закрыть программу?").cancel():
+            event.ignore()
+            return
         di.Container.comm().disconnect()
         QApplication.closeAllWindows()
+        event.accept()
+
