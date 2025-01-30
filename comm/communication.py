@@ -85,7 +85,8 @@ class Comm:
         else:
             self.status = CommStatus.DISCONNECT
         finally:
-            self.port.close()
+            if self.port is not None:
+                self.port.close()
 
     def checkResponse(self, read, startChar, endChar, content=None):
         try:
