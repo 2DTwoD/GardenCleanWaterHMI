@@ -22,17 +22,22 @@ class Comm:
                                    di.Container.tankValues().select(TankNumber.OB1),
                                    di.Container.tankValues().select(TankNumber.OB2),
                                    di.Container.tankValues().select(TankNumber.OB3)]
-        self.baudrate = 19200
         self.cycleIndex = 0
         self.errorCounter = 0
         self.sendCommand = []
         self.start = False
         self.status = CommStatus.DISCONNECT
-        self.bufferSize = 256
-        self.sendPeriod = 0.1
-        self.readTimeOut = 0.5
 
+        #Скорость передачи
+        self.baudrate = 19200
+        #Период обмена, сек
+        self.sendPeriod = 0.1
+        #Время возникновения ошибки передачи, если нет ответа, сек
+        self.readTimeOut = 0.5
+        #Разное
+        self.bufferSize = 256
         self.maxCountForErrorVis = 20
+
         self.errorCounter = self.maxCountForErrorVis
 
     def send(self, command: str):

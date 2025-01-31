@@ -4,8 +4,10 @@ from PyQt6.QtCore import QTimer
 class Updater:
 
     def __init__(self):
+        #Период обновления объектов, мсек
+        interval = 1000
         self.timer = QTimer()
-        self.timer.setInterval(1000)
+        self.timer.setInterval(interval)
         self.timer.timeout.connect(self.startUpdate)
         self.timer.daemon = True
 

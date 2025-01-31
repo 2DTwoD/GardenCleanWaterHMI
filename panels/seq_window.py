@@ -22,16 +22,16 @@ class SeqStroke(list):
         self.stepNumber = stepNumber
 
         self.stepLabel = SLabel(f"Шаг {stepNumber}")
-        self.descLabel = SLabel(desc)
         self.statusLabel = SLabel(statusList[0], background=statusColorList[0])
+        self.descLabel = SLabel(desc)
         self.actionLabel = SLabel(actionDesc)
         self.startLabel = SLabel(startDesc)
         self.lockLabel = SLabel(lockDesc)
         self.endLabel = SLabel(endDesc)
 
         self.append(self.stepLabel)
-        self.append(self.descLabel)
         self.append(self.statusLabel)
+        self.append(self.descLabel)
         self.append(self.actionLabel)
         self.append(self.startLabel)
         self.append(self.lockLabel)
@@ -223,8 +223,8 @@ class SeqWindow(QWidget, Updater):
 
     def getHeader(self):
         return [SLabel("Номер шага", background="black", color="white", align=Align.CENTER),
-                SLabel("Описание", background="black", color="white", align=Align.CENTER),
                 SLabel("Статус", background="black", color="white", align=Align.CENTER),
+                SLabel("Описание", background="black", color="white", align=Align.CENTER),
                 SLabel("Действие", background="black", color="white", align=Align.CENTER),
                 SLabel("Условие старта", background="black", color="white", align=Align.CENTER),
                 SLabel("Блокировка", background="black", color="white", align=Align.CENTER),

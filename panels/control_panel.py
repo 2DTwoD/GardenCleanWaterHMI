@@ -19,6 +19,7 @@ class TankStroke(list):
         super().__init__()
 
         self.comm = di.Container.comm()
+        self.tankValues = di.Container.tankValues()
         self.tankNumber = tankNumber
         self.seqWindow = None
 
@@ -62,6 +63,12 @@ class TankStroke(list):
         self.manButton.setBackground(manColor)
 
     def autoManButton(self, value):
+        if self.tankValues.get(self.tankNumber, "auto") == value:
+            return
+        message = f"Перевести '{tankLabelList[self.tankNumber.value]}' в автоматический режим?" if value > 0 else \
+            f"Перевести '{tankLabelList[self.tankNumber.value]}' в ручной режим?"
+        if Confirm(message).cancel():
+            return
         if self.tankNumber == TankNumber.CHB:
             self.comm.send(f"[set.chbauto.{value}]")
         else:
@@ -93,7 +100,7 @@ class MiscStroke(list):
         self.stopAllButton.clicked.connect(self.stopAll)
 
     def autoManAll(self, value):
-        message = "Перевести всё в автомат?" if value > 0 else "Перевести всё в ручной режим?"
+        message = "Перевести всё в автоматический режим?" if value > 0 else "Перевести всё в ручной режим?"
         if Confirm(message).cancel():
             return
         self.comm.send(f"[set.allauto.{value}]")
