@@ -7,8 +7,8 @@ from panels.item import Item
 from misc import di
 from panels.sensor_mon import SensorMon
 from misc.own_types import ObjectType, RotateDir, TankNumber
+from widgets.brics import SLabel
 from widgets.dialog import Confirm
-
 
 class MainWindow(QMainWindow):
     M1: Item = None
@@ -35,13 +35,18 @@ class MainWindow(QMainWindow):
     S5: SensorMon = None
     S6: SensorMon = None
 
-    def __init__(self):
+    def __init__(self, version="v0.0.0", windowWidth=1200, windowHeight=800):
         super().__init__()
         self.setWindowTitle("Очистка воды HMI")
-        self.setFixedSize(1200, 820)
+        self.setFixedSize(windowWidth, windowHeight)
         self.setStyleSheet("background: white; background-image: url(pics/back.png)")
         self.mousePos = None
         self.controlPanel = None
+
+        versionLabel = SLabel(version, parent=self, maxWidth=50)
+
+        versionLabel.move(self.size().width() - versionLabel.size().width(),
+                          self.size().height() - versionLabel.size().height())
         self.setMouseTracking(True)
         self.setWindowIcon(QIcon('pics/icons/main.png'))
 

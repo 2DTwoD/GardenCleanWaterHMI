@@ -11,8 +11,7 @@ from widgets.dialog import Confirm
 statusList = ["Ожидание", "Активен", "Заблокир.", "Завершен", "Не определён"]
 statusColorList = ["lightgray", "lightblue", "yellow", "lightgreen", "red"]
 stepBackgroundList = ["lightgray", "lightblue"]
-resetSeqButtonColors = ["gray", "red"]
-nextStepButtonColors = ["gray", "yellow"]
+autoButtonColors = ["lightgray", "#00FF00", "yellow"]
 
 class SeqStroke(list):
     def __init__(self, stepNumber, desc, actionDesc, startDesc="Всегда", lockDesc="Ручной режим",
@@ -92,6 +91,7 @@ class SeqWindow(QWidget, Updater):
         self.comm = di.Container.comm()
         mousePos = di.Container.mousePos()
         self.tankNumber = tankNumber
+        self.windowTitle = windowTitle
         self.rowNum = 0
 
         self.grid = QGridLayout()
@@ -135,13 +135,20 @@ class SeqWindow(QWidget, Updater):
             self.addRow(self.step6Stroke)
             self.setFixedSize(85 * getGeometryStep(), 33 * getGeometryStep())
 
+        self.autoButton = SButton("Автомат", color="black", background=autoButtonColors[0])
+        self.manButton = SButton("Ручной", color="black", background=autoButtonColors[0])
+        self.nextButton = SButton("Пропустить шаг", color="black", background="orange")
         self.resetButton = SButton("Сброс последовательности", color="white", background="red")
-        self.nextButton = SButton("Пропустить шаг", color="black", background="yellow")
-        self.grid.addWidget(self.resetButton, self.rowNum, 0, 1, 3)
-        self.grid.addWidget(self.nextButton, self.rowNum, 3, 1, 2)
 
-        self.resetButton.clicked.connect(self.resetSeq)
+        self.grid.addWidget(self.autoButton, self.rowNum, 0, 1, 2)
+        self.grid.addWidget(self.manButton, self.rowNum, 2, 1, 1)
+        self.grid.addWidget(self.nextButton, self.rowNum, 3, 1, 2)
+        self.grid.addWidget(self.resetButton, self.rowNum, 5, 1, 2)
+
+        self.autoButton.clicked.connect(lambda: self.autoManButton(1))
+        self.manButton.clicked.connect(lambda: self.autoManButton(0))
         self.nextButton.clicked.connect(self.nextStep)
+        self.resetButton.clicked.connect(self.resetSeq)
 
         self.setWindowTitle(windowTitle)
         self.setStyleSheet("background: gray")
@@ -167,6 +174,18 @@ class SeqWindow(QWidget, Updater):
             self.comm.send("[set.chbnext.1]")
         else:
             self.comm.send(f"[set.ob{self.tankNumber.value}next.1]")
+
+    def autoManButton(self, value):
+        if self.tankValues.get(self.tankNumber, "auto") == value:
+            return
+        message = f"Перевести '{self.windowTitle}' в автоматический режим?" if value > 0 else \
+            f"Перевести '{self.windowTitle}' в ручной режим?"
+        if Confirm(message).cancel():
+            return
+        if self.tankNumber == TankNumber.CHB:
+            self.comm.send(f"[set.chbauto.{value}]")
+        else:
+            self.comm.send(f"[set.ob{self.tankNumber.value}auto.{value}]")
 
     def updateAction(self):
         self.updateStroke(self.step1Stroke, self.tankValues.get(self.tankNumber, "step"),
@@ -195,10 +214,8 @@ class SeqWindow(QWidget, Updater):
                               self.tankValues.get(self.tankNumber, "s6St"))
 
         auto = self.tankValues.get(self.tankNumber, "auto")
-        self.resetButton.setEnabled(auto)
-        self.resetButton.setBackground(resetSeqButtonColors[auto])
-        self.nextButton.setEnabled(auto)
-        self.nextButton.setBackground(nextStepButtonColors[auto])
+        self.autoButton.setBackground(autoButtonColors[int(auto)])
+        self.manButton.setBackground(autoButtonColors[2 - int(auto) * 2])
 
 
     @staticmethod
